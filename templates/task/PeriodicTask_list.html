@@ -1,0 +1,158 @@
+{% extends 'task/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}任務列表{% endblock %}
+
+{% block head %}
+
+    <style>
+        .text-navy {
+            color: #1ab394;
+        }
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">作業中心</li>
+            <li class="breadcrumb-item" aria-current="page">任務列表</li>
+        </ol>
+    </nav>
+
+
+
+
+
+    <div class="row">
+
+        <div class="col-md-4">
+
+        </div>
+
+
+        <!-- 篩選 -->
+        <div class="col-md-8 text-right">
+            <form class="form-inline float-right" method="get" style="display: none">
+                <input type="text" class="form-control" name='contacts' id="search" placeholder=""
+                       value="{{ paginator.per_page }}" style="display: none">
+                <input type="submit" class="btn btn-primary">
+        </div>
+        </form>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <table class="table table-hover table-bordered text-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+                    <th>name</th>
+                    <th>執行次數</th>
+                    <th>日期</th>
+                    <th>成功</th>
+                    <th>功能</th>
+                </tr>
+                </thead>
+                <tbody>
+
+
+                {% for periodictask in periodictask_list %}
+
+                    <tr>
+
+
+                        <td>{{ forloop.counter }}</td>
+                        <td>{% pt_name periodictask %}</td>
+                        <td>{% pt_runloop periodictask %}</td>
+                        <td>{{ periodictask.last_run_at }}</td>
+                        <td>
+                            {% if  periodictask.taskdetail_set.all.last.taskid.status == 'SUCCESS' %}
+                                <i class="fa fa-check text-navy"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
+                            {% endif %}
+
+                        </td>
+                        <td>
+                            <a href="{% url 'asset:td-list' %}?id={{ periodictask.id }}"
+                               class="btn btn-primary btn-sm">詳細</a>
+                        </td>
+
+
+                    </tr>
+
+
+
+                {% endfor %}
+
+
+                </tbody>
+                <tfoot>
+
+                </tfoot>
+
+            </table>
+            <nav aria-label="Page navigation">
+
+                <ul class="pagination float-left">
+                    共{{ paginator.count }}筆
+                    <label style="padding-left: 20px">顯示</label>
+                    <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit"
+                            id='contacts'>
+                        {% for i in page_list %}
+                            {% if i == paginator.per_page %}
+                                <option value={{ i }} selected>{{ i }}</option>
+                            {% else %}
+                                <option value={{ i }}>{{ i }}</option>
+                            {% endif %}
+                        {% endfor %}
+
+                    </select>筆
+                </ul>
+
+
+                <ul class="pagination float-right">
+                    {% get_pageer page_obj search_field %}
+                </ul>
+
+            </nav>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block extra-js %}
+
+    <script>
+
+        $(document).ready(function () {
+            $('.table').DataTable(
+                {
+                    "searching": false,
+                    "paging": false,
+                    "bInfo": false,
+
+
+                }
+            );
+        }).on('change', ".contacts", function () {
+            console.log('onchange');
+            $('.form-inline [name="contacts"]').val($(this).val())
+            $('.form-inline').submit()
+      })
+    </script>
+
+
+
+{% endblock %}

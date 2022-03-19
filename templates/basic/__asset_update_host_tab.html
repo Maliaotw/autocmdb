@@ -1,0 +1,168 @@
+<div class="tab-content" id="pills-tabContent">
+
+    <!-- /硬件信息 Tab -->
+    <div class="tab-pane fade show active" id="tab_asset">
+
+
+        <p><b>主機信息</b>&nbsp;&nbsp;&nbsp;&nbsp;
+        </p>
+        <div id="host" style="padding-left: 15px">
+
+            <table class="table">
+                <tbody>
+                <tr>
+                    <td width="20%">主机名:</td>
+                    <td><b>{{ asset.content_object.name }}</b></td>
+                </tr>
+                <tr>
+                    <td>類型:</td>
+                    <td><b>{{ asset.get_device_type_id_display }}</b></td>
+                </tr>
+
+                <tr>
+                    <td>IP:</td>
+                    <td><b>{{ asset.content_object.manage_ip|default:'' }}</b></td>
+                </tr>
+
+                <tr>
+                    <td>制造商:</td>
+                    <td><b>{{ asset.content_object.manufacturer|default:'' }}</b></td>
+                </tr>
+                <tr>
+                    <td>型号:</td>
+                    <td><b>{{ asset.content_object.model|default:'' }}</b></td>
+                </tr>
+                <tr>
+                    <td>系统平台:</td>
+                    <td><b>{{ asset.content_object.os_platform|default:'' }}</b></td>
+                </tr>
+                <tr>
+                    <td>操作系统:</td>
+                    <td><b>{{ asset.content_object.os_distribution|default:'' }}</b></td>
+                </tr>
+
+                <tr>
+                    <td>激活:</td>
+                    <td><b>{{ asset.content_object.enabled }}</b></td>
+                </tr>
+                <tr>
+                    <td>序列号:</td>
+                    <td><b>{{ asset.content_object.sn }}</b></td>
+                </tr>
+                <tr>
+                    <td>资产编号:</td>
+                    <td><b></b></td>
+                </tr>
+
+                <tr>
+                    <td>创建日期:</td>
+                    <td><b>{{ asset.content_object.create_at }}</b></td>
+                </tr>
+
+                <tr>
+                    <td>最後更新日期:</td>
+                    <td><b>{{ asset.content_object.latest_date }}</b></td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <p><label>CPU&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-plus" data-toggle="collapse"
+                                                data-target="#cpu"></i>
+        </label></p>
+        <div id="cpu" class="collapse" style="padding-left: 15px">
+
+            <table class="table">
+                <tbody>
+                {% for i in asset.get_cpu_info %}
+                    <tr>
+                        <td width="20%">{{ i.slot }}</td>
+                        <td><b>{{ i.cores }}Cores, {{ i.model }}</b></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+
+            </table>
+        </div>
+
+        <p><label>Disk&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-plus" data-toggle="collapse"
+                                                 data-target="#disk"></i>
+        </label></p>
+        <div id="disk" class="collapse" style="padding-left: 15px">
+
+            <table class="table">
+                <tbody>
+                {% for i in asset.get_disk_info %}
+                    <tr>
+                        <td width="20%">{{ i.slot }}</td>
+                        <td><b>{{ i.capacity }}G, {{ i.model }}</b></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+
+            </table>
+        </div>
+
+
+        <p><label>Mem&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-plus" data-toggle="collapse"
+                                                data-target="#mem"></i>
+        </label></p>
+        <div id="mem" class="collapse" style="padding-left: 15px">
+
+            <table class="table">
+                <tbody>
+                {% for i in asset.get_mem_info %}
+                    <tr>
+                        <td width="20%">{{ i.slot }}</td>
+                        <td><b>{{ i.capacity }}G, {{ i.model }}</b></td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+        <p><label>Nic&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-plus" data-toggle="collapse"
+                                                data-target="#nic"></i>
+        </label></p>
+        <div id="nic" class="collapse" style="padding-left: 15px">
+
+            <table class="table">
+                <tbody>
+                {% for i in asset.get_nic_info %}
+                    <tr>
+                        <td width="20%">{{ i.name }}</td>
+                        <td><b>{{ i.ipaddress }}, {{ i.macaddress }}</b></td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- /端口信息 Tab -->
+    <div class="tab-pane fade" id="tab_port" role="tabpanel">
+
+    </div>
+
+
+    <!-- /進程信息 Tab -->
+    <div class="tab-pane fade" id="tab_procs" role="tabpanel">
+
+    </div>
+
+
+    <!-- /更变纪录 Tab -->
+    <div class="tab-pane fade" id="tab_record" role="tabpanel">
+
+    </div>
+
+</div>

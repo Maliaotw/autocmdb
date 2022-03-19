@@ -1,0 +1,186 @@
+{% extends 'bus/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+
+
+{% block head %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+    <style>
+
+        .card-body .table td {
+            border-top: 0px !important;
+        }
+
+
+        pre {
+            white-space: pre-wrap;
+            height: 300px !important;
+        }
+
+        i {
+            cursor: pointer;
+        }
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">業務資源</li>
+            <li class="breadcrumb-item " aria-current="page">
+                <a href="{% url 'host:host-list' %}">虛擬機列表</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <b>{{ host }}</b>
+            </li>
+
+        </ol>
+    </nav>
+
+
+
+    <div class="row">
+
+        <div class="col-md-8">
+            {% include 'basic/__asset_update_host_nav.html' %}
+
+        </div>
+
+        <div class="align-self-sm-center col-md-4 mb-3 text-right">
+            <span>最近更新日期： {{ host.latest_date }}</span>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+
+
+        <div class="col-sm-7">
+
+
+            <div class="tab-content" id="pills-tabContent">
+
+                <!-- /硬件信息 Tab -->
+                <div class="tab-pane fade show active" id="tab_asset">
+                    {% include 'bus/_host_detail_tab_host.html' %}
+                </div>
+
+
+                <!-- /端口信息 Tab -->
+                <div class="tab-pane fade" id="tab_port" role="tabpanel">
+                    {% include 'bus/_host_detail_tab_net.html' %}
+                </div>
+
+
+                <!-- /進程信息 Tab -->
+                <div class="tab-pane fade" id="tab_procs" role="tabpanel">
+                    {% include 'bus/_host_detail_tab_proc.html' %}
+                </div>
+
+
+                <!-- /更变纪录 Tab -->
+                <div class="tab-pane fade" id="tab_record" role="tabpanel">
+                    {% include 'bus/_host_detail_tab_record.html' %}
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="col-sm-5" style="padding-left: 0;padding-right: 0">
+
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block extra-js %}
+
+
+    <script>
+
+        $('[data-toggle="popover"]').popover();
+
+    </script>
+
+    <script>
+
+        var idc_data = "{{ idc_data|safe }}";
+
+        function foo(ele) {
+
+            var id_racks = $("#id_rack");
+            id_racks.find('option')
+                .remove()
+                .end()
+                .append('<option value="">--------</option>')
+                .val('')
+            ;
+
+            $.each(idc_data[$(ele).val()], function (i, item) {
+                id_racks.append($('<option>', {
+                    value: item.id,
+                    text: item.name,
+                }));
+            });
+
+        }
+
+        $(document).ready(function () {
+
+        }).on('click', '.btn-update', function () {
+            console.log('.btn-update');
+            $.ajax({
+                url: '',
+                type: 'POST',
+                data: {
+                    'device_type_id': $("#id_device_type_id").val(),
+                    'device_status_id': $("#id_device_status_id").val(),
+                    'tag': $("#id_tag").val(),
+                    'rack': $("#id_rack").val(),
+                },
+
+
+            }).done(function (callback) {
+                //console.log(callback);
+                toastr.success("更新成功")
+            }).fail(function () {
+                toastr.success("更新失敗")
+            })
+
+
+        }).on('change', '#id_idc', function () {
+            var id_racks = $("#id_rack");
+            id_racks.find('option')
+                .remove()
+                .end()
+                .append('<option value="">--------</option>')
+                .val('')
+            ;
+
+            $.each(idc_data[$(this).val()], function (i, item) {
+                id_racks.append($('<option>', {
+                    value: item.id,
+                    text: item.name,
+                }));
+            });
+        })
+
+
+    </script>
+
+{% endblock %}

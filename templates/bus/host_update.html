@@ -1,0 +1,228 @@
+{% extends 'bus/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}資產列表{% endblock %}
+
+
+{% block head %}
+    <style>
+
+        .panel .table > tbody > tr > td {
+            border-top: 0px
+        }
+
+
+        .panel-warning > .panel-heading {
+            background-color: #f8ac59;
+            border-color: #f8ac59;
+            color: #ffffff;
+        }
+
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="">
+        <ol class="breadcrumb down">
+            <li><a href="{% url 'asset:asset-list' %}">資產列表</a> / {{ asset.content_object.name }}</li>
+        </ol>
+    </div>
+
+
+
+    <div class="col-sm-12">
+        <div class="panel-options">
+            <ul class="nav nav-tabs">
+
+
+                {% if asset.get_device_type_id_display == '服務器' %}
+                    {% include 'basic/__asset_update_host_nav.html' %}
+
+                {% else %}
+                    {% include 'basic/__asset_update_netware_nav.html' %}
+
+                {% endif %}
+
+
+                <li class="pull-right" style="margin: 1px">
+                    <a class="btn btn-success btn-update">
+                        <i class="fa fa-upload"></i>更新
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-sm-12">
+
+
+        <div class="col-sm-7" style="padding-left: 0;background-color: #f5f5f5">
+            {% if asset.get_device_type_id_display == '服務器' %}
+                {% include 'basic/__asset_update_host_tab.html' %}
+
+            {% else %}
+                {% include 'basic/__asset_update_netware_tab.html' %}
+
+            {% endif %}
+
+
+        </div>
+
+
+        <div class="col-sm-5" style="padding-left: 0;padding-right: 0">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <i class="fa fa-info-circle"></i> 快速修改
+                </div>
+                <div class="panel-body">
+                    <table class="table">
+                        <tbody>
+                        <tr style="display: none">
+                            <td><label>類型</label></td>
+                            <td>
+                                {{ form.device_type_id }}
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>狀態</label></td>
+                            <td>
+                                {{ form.device_status_id }}
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>{{ form.tag.label }}</td>
+                            <td>
+                                {{ form.tag }}
+                            </td>
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <i class="fa fa-info-circle"></i> 機房管理
+                </div>
+                <div class="panel-body">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+
+                            <td><label>機房</label></td>
+                            <td><select class="selectpicker form-control" title="" name='idc' id="id_idc">
+                                <option value="">-------</option>
+                                {% for idc in idc_list %}
+                                    {% if idc.id == asset.rack.idc.id %}
+                                        <option value="{{ idc.id }}" selected>{{ idc }}</option>
+                                    {% else %}
+                                        <option value="{{ idc.id }}">{{ idc }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td><label>機櫃</label></td>
+                            <td>{{ form.rack }}</td>
+
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+
+{% block extra-js %}
+
+
+    <script>
+
+        var idc_data = {{ idc_data|safe }};
+
+        function foo(ele) {
+
+            var id_racks = $("#id_rack");
+            id_racks.find('option')
+                .remove()
+                .end()
+                .append('<option value="">--------</option>')
+                .val('')
+            ;
+
+            $.each(idc_data[$(ele).val()], function (i, item) {
+                id_racks.append($('<option>', {
+                    value: item.id,
+                    text: item.name,
+                }));
+            });
+
+        }
+
+        $(document).ready(function () {
+
+        }).on('click', '.btn-update', function () {
+            console.log('.btn-update');
+            $.ajax({
+                url: '',
+                type: 'POST',
+                data: {
+                    'device_type_id': $("#id_device_type_id").val(),
+                    'device_status_id': $("#id_device_status_id").val(),
+                    'tag': $("#id_tag").val(),
+                    'rack': $("#id_rack").val(),
+                },
+
+
+            }).done(function (callback) {
+               console.log(callback);
+                    toastr.success("更新成功")
+            }).fail(function () {
+                 toastr.success("更新失敗")
+            })
+
+
+        }).on('change', '#id_idc', function () {
+            var id_racks = $("#id_rack");
+            id_racks.find('option')
+                .remove()
+                .end()
+                .append('<option value="">--------</option>')
+                .val('')
+            ;
+
+            $.each(idc_data[$(this).val()], function (i, item) {
+                id_racks.append($('<option>', {
+                    value: item.id,
+                    text: item.name,
+                }));
+            });
+        })
+
+
+    </script>
+
+{% endblock %}

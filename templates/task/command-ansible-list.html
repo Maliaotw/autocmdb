@@ -1,0 +1,526 @@
+{% extends 'task/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}CMDB{% endblock %}
+
+
+{% block head %}
+
+
+    <link rel="stylesheet" href="{% static 'plugins/xterm/css/xterm.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/codemirror/css/codemirror.css' %}" type="text/css">
+    <script src="{% static 'plugins/xterm/js/xterm.js' %}"></script>
+    <script src="{% static 'plugins/codemirror/js/codemirror.js' %}"></script>
+    <script src="{% static 'plugins/codemirror/js/yaml.js' %}"></script>
+    <script src="{% static 'js/clike.js' %}"></script>
+
+    <link rel="stylesheet" href="{% static 'plugins/ztree/css/zTreeStyle/zTreeStyle.css' %}" type="text/css">
+    <script src="{% static 'plugins/ztree/js/jquery.ztree.core.js' %}"></script>
+    <script src="{% static 'plugins/ztree/js/jquery.ztree.excheck.js' %}"></script>
+
+
+    <style>
+
+        .panel .table > tbody > tr > td {
+            border-top: 0px
+        }
+
+
+        .panel-warning > .panel-heading {
+            background-color: #f8ac59;
+            border-color: #f8ac59;
+            color: #ffffff;
+        }
+
+        #tree .list-group {
+            font-size: 10px;
+        }
+
+        #tree .list-group-item {
+            padding: 5px 5px;
+        }
+
+
+        .terminal {
+            padding: 5px;
+            color: #fff;
+            font-family: courier-new, courier, monospace;
+            font-feature-settings: "liga" 0;
+            position: relative;
+        }
+
+        .CodeMirror {
+            border: 3px solid #eee;
+            font-family: monospace;
+            height: auto;
+            color: black;
+            direction: ltr;
+        }
+
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">作業中心</li>
+            <li class="breadcrumb-item" aria-current="page">命令中心</li>
+        </ol>
+    </nav>
+
+
+
+
+
+    <div class="row">
+
+        <div class="col-md-4">
+            {#            <div id="tree"></div>#}
+            <span><a href="{% url 'asset:cmd-list' %}" class="btn btn-info btn">切換回舊版編輯器</a></span>
+            <div id="treeDemo" class="ztree"></div>
+        </div>
+
+
+        <div class="col-md-8">
+            <div id="terminal"></div>
+
+            <div class="row mt-3">
+
+                <div class="col-md-10">
+                    <textarea class="form-control" type="text" id="code" name="code" >{{ cmd|default:'' }}</textarea>
+                </div>
+
+                  <div class="col-md-2" style="text-align: left">
+
+                    <button class="btn btn-primary btn-lg" id="btn-run">執行命令</button>
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
+    {% csrf_token %}
+
+
+
+{% endblock %}
+
+
+
+
+
+{% block extra-js %}
+
+
+    <script>
+
+        var socket = new WebSocket("ws://" +window.location.host + "{% url 'asset:cmd-ws-play' %}");
+        //console.log(socket);
+        socket.onopen = function () {
+            console.log('WebSocket open');//成功连接上Websocket
+        };
+        socket.onmessage = function (e) {
+
+            var data = JSON.parse(e.data);
+            //console.log(data);
+
+            if (data) {
+                term.write(data.data + "\r\n");
+            }
+
+
+        }
+
+    </script>
+
+    <script>
+
+
+        var setting = {
+            view: {
+                selectedMulti: false,
+                showIcon: false,
+            },
+            check: {
+                enable: true
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onCheck: onCheck
+            }
+        };
+
+        var zNodes = [
+            {id: 1, pId: 0, name: "随意勾选 1"},
+            {id: 11, pId: 1, name: "随意勾选 1-1"},
+            {id: 12, pId: 1, name: "随意勾选 1-2"},
+            {id: 13, pId: 1, name: "随意勾选 1-2-1"},
+            {id: 14, pId: 1, name: "随意勾选 1-2-2"},
+            {id: 2, pId: 0, name: "禁止勾选 2"},
+            {id: 21, pId: 2, name: "禁止勾选 2-1"},
+            {id: 22, pId: 2, name: "禁止勾选 2-2"},
+            {id: 221, pId: 2, name: "禁止勾选 2-2-1"},
+            {id: 222, pId: 2, name: "禁止勾选 2-2-2"},
+            {id: 23, pId: 2, name: "禁止勾选 2-3"},
+            {id: 15, pId: 1, name: "随意勾选 1-2-333"},
+        ];
+
+
+        var code, log, className = "dark";
+
+
+        function onCheck(e, treeId, treeNode) {
+            //console.log(e, treeId, treeNode);
+            var nodes = getSelectedAssetsNode();
+            var nodes_names = nodes.map(function (node) {
+                return node.name;
+            });
+            var message = "選擇資產" + ': ';
+            message += nodes_names.join(", ");
+            message += "\r\n";
+            message += "共" + ': ' + nodes_names.length + "个\r\n";
+            term.clear();
+            term.write(message)
+
+        }
+
+        function showLog(str) {
+            if (!log) log = $("#log");
+            log.append("<li class='" + className + "'>" + str + "</li>");
+            if (log.children("li").length > 6) {
+                log.get(0).removeChild(log.children("li")[0]);
+            }
+        }
+
+        function getTime() {
+            var now = new Date(),
+                h = now.getHours(),
+                m = now.getMinutes(),
+                s = now.getSeconds(),
+                ms = now.getMilliseconds();
+            return (h + ":" + m + ":" + s + " " + ms);
+        }
+
+        function checkNode(e) {
+            var zTree = $.fn.zTree.getZTreeObj("treeDemo"),
+                type = e.data.type,
+                nodes = zTree.getSelectedNodes();
+            if (type.indexOf("All") < 0 && nodes.length == 0) {
+                alert("请先选择一个节点");
+            }
+
+            if (type == "checkAllTrue") {
+                zTree.checkAllNodes(true);
+            } else if (type == "checkAllFalse") {
+                zTree.checkAllNodes(false);
+            } else {
+                var callbackFlag = $("#callbackTrigger").attr("checked");
+                for (var i = 0, l = nodes.length; i < l; i++) {
+                    if (type == "checkTrue") {
+                        zTree.checkNode(nodes[i], true, false, callbackFlag);
+                    } else if (type == "checkFalse") {
+                        zTree.checkNode(nodes[i], false, false, callbackFlag);
+                    } else if (type == "toggle") {
+                        zTree.checkNode(nodes[i], null, false, callbackFlag);
+                    } else if (type == "checkTruePS") {
+                        zTree.checkNode(nodes[i], true, true, callbackFlag);
+                    } else if (type == "checkFalsePS") {
+                        zTree.checkNode(nodes[i], false, true, callbackFlag);
+                    } else if (type == "togglePS") {
+                        zTree.checkNode(nodes[i], null, true, callbackFlag);
+                    }
+                }
+            }
+        }
+
+        function setAutoTrigger(e) {
+            var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+            zTree.setting.check.autoCheckTrigger = $("#autoCallbackTrigger").attr("checked");
+            $("#autoCheckTriggerValue").html(zTree.setting.check.autoCheckTrigger ? "true" : "false");
+        }
+
+
+        function getSelectedAssetsNode() {
+            var nodes = zTree.getCheckedNodes(true);
+            var assetsNodeId = [];
+
+            var assetsNode = [];
+            nodes.forEach(function (node) {
+                //console.log(node);
+                if (node.pId) {
+                    assetsNodeId.push(node.id);
+                    assetsNode.push(node);
+                }
+            });
+
+            //console.log(assetsNode)
+            return assetsNode;
+        }
+
+    </script>
+
+    <script>
+
+
+        var term = null;
+
+        $(document).ready(function () {
+
+            $.ajax({
+                url: '{% url 'api:host' %}',
+                type: 'GET',
+                async: false
+
+
+            }).done(function (callback) {
+                //console.log(callback);
+                toastr.success("成功");
+
+
+                $.fn.zTree.init($("#treeDemo"), setting, callback);
+                zTree = $.fn.zTree.getZTreeObj("treeDemo");
+
+            }).fail(function () {
+                toastr.success("失敗");
+                swal({
+                    title: "Error!",
+                    text: "Here's my error message!",
+                    type: "error",
+                    confirmButtonText: "Cool"
+                });
+
+            });
+
+
+            $("#autoCallbackTrigger").bind("change", {}, setAutoTrigger);
+            {#initTree();#}
+            initEditor();
+            initTerm();
+
+            editor.refresh();
+        })
+            .on('click', '#btn-run', function () {
+
+                console.log('btn-run');
+                execute()
+
+            });
+
+        function initTree() {
+            $.ajax({
+                url: '{% url 'api:node' %}',
+                type: 'GET',
+                async: false
+
+
+            }).done(function (callback) {
+                //console.log(callback);
+                toastr.success("f");
+
+                $('#tree').treeview({
+                    color: "#428bca",
+                    showTags: true,
+                    data: callback,
+                    multiSelect: false,
+                    levels: 0,
+                    view: {
+                        showIcon: false,
+                    },
+                });
+
+
+            }).fail(function () {
+                toastr.success("失敗");
+                swal({
+                    title: "Error!",
+                    text: "Here's my error message!",
+                    type: "error",
+                    confirmButtonText: "Cool"
+                });
+
+            });
+
+
+        }
+
+        function wrapperError(msg) {
+            return '\033[31m' + msg + '\033[0m' + '\r\n';
+        }
+
+        function initTerm() {
+            term = new Terminal({
+                //cursorBlink: false,
+                screenKeys: false,
+                fontSize: 14,
+                rightClickSelectsWord: true,
+                disableStdin: true,
+                cols: 110,
+                rows: 20,
+                //cursorBlink: 5,
+                //scrollback: 30,
+                theme: {
+                    background: '#1f1b1b'
+                }
+            });
+            term.open(document.getElementById('terminal'));
+            term.write('选择左侧资产, 选择运行的系统用户，批量执行命令\n\r');
+            //term.fit();
+
+            $list = [];
+            $('#tree').on('nodeSelected', function (event, data) {
+                //console.log(event);
+                //console.log(data);
+            });
+
+            $('#tree').on('nodeChecked', function (event, data) {
+                    //console.log(event);
+                    //console.log(data);
+                    //console.log(data.text);
+
+                    if (data.nodes != null) {
+                        // 父節點
+                        $.each(data.nodes, function (index, value) {
+                            $('#tree').treeview('checkNode', value.nodeId, {
+                                silent: true
+                            });
+                        });
+                    } else {
+                        if ($list.includes(data.text)) {
+
+                        } else {
+                            $list.push(data.text);
+
+                        }
+                        term.write('\x1b[H\x1b[2J'); // clear
+                        term.write("已選擇資產: " + $list.join(', ') + "\n\r");
+                        term.write("總共: " + $list.length + "個\n\r");
+
+                    }
+                }
+            );
+
+            $('#tree').on('nodeUnchecked', function (event, data) {
+                //console.log(event);
+                //console.log(data);
+                //console.log(data.text);
+                //console.log($list);
+
+                if (data.nodes != null) {
+                    // 父節點
+                    $.each(data.nodes, function (index, value) {
+                        $('#tree').treeview('uncheckNode', value.nodeId, {
+                            silent: true
+                        });
+                    });
+                } else {
+
+                    var i = $list.indexOf(data.text);
+                    $list.splice(i, 1);
+
+                    term.write('\x1b[H\x1b[2J'); // clear
+                    term.write("已選擇資產: " + $list.join(', ') + "\n\r");
+                    term.write("總共: " + $list.length + "個\n\r");
+                }
+            });
+
+        }
+
+
+        function initEditor() {
+            editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+                lineNumbers: true,
+                mode: "text/yaml",
+                direction: "ltr",
+            });
+        }
+
+        function get_uuid() {
+            $.ajax({
+                url: '{% url 'api:command' %}',
+                type: 'GET',
+                async: false,
+
+            }).done(function (callback) {
+
+                window.uuid = callback.data;
+
+
+            }).fail(function () {
+
+            });
+
+            return uuid
+
+        }
+
+
+        function execute() {
+
+            var uuid = get_uuid();
+
+            //var hostids = [];
+            var nodes = getSelectedAssetsNode();
+            var hostids = nodes.map(function (node) {
+                return node.hostid;
+            });
+            var command = editor.getValue();
+            // 返回目前勾選的
+            // checklist = $('#tree').treeview('getChecked');
+            //$.each(checklist, function (k, v) {
+            //排除父節點
+            //  if (v.nodes == null) {
+            {#console.log(k, v);#}
+            //    hostids.push(v.id);
+            //}
+            //});
+            //console.log(hostids);
+
+
+            if (hostids.length === 0) {
+                term.write(wrapperError("未選擇資產"));
+                return
+            }
+            if (!command) {
+                term.write(wrapperError("未輸入命令"));
+                return
+            }
+
+            //執行命令
+
+            var payload = {
+                "hostids": hostids,
+                "data": command,
+                "user": "{{ request.user.id }}"
+            };
+
+            // Make the request to the WebSocket.
+            socket.send(JSON.stringify(payload));
+
+            //socket.send(command);
+
+            term.write('--------- 任务开始 ----------\n\r');
+
+
+        }
+
+
+    </script>
+
+
+
+
+
+{% endblock %}

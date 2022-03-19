@@ -1,0 +1,280 @@
+{% extends 'basic/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}資產列表{% endblock %}
+
+
+{% block head %}
+    <style>
+
+        .card-body .table td {
+            border-top: 0px !important;
+        }
+
+
+        .panel-warning > .panel-heading {
+            background-color: #f8ac59;
+            border-color: #f8ac59;
+            color: #ffffff;
+        }
+
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">基礎資源</li>
+            <li class="breadcrumb-item " aria-current="page">
+                <a href="{% url 'asset:asset-list' %}">資產列表</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ asset.content_object.name }}
+            </li>
+        </ol>
+    </nav>
+
+    <div class="row">
+
+        <div class="col-sm-10">
+            <div class="panel-options">
+                <ul class="nav nav-tabs">
+
+
+                    {% if asset.get_device_type_id_display == '服務器' %}
+                        {% include 'basic/__asset_update_host_nav.html' %}
+
+                    {% else %}
+                        {% include 'basic/__asset_update_netware_nav.html' %}
+                    {% endif %}
+
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-2 text-right">
+            <button class="btn btn-success btn-update">
+                <i class="fa fa-upload"></i> 更新
+            </button>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="row">
+
+
+        <div class="col-sm-7" style="background-color: #f5f5f5">
+            {% if asset.get_device_type_id_display == '服務器' %}
+                {% include 'basic/__asset_update_host_tab.html' %}
+
+            {% else %}
+                {% include 'basic/__asset_update_netware_tab.html' %}
+
+            {% endif %}
+
+
+        </div>
+
+
+        <div class="col-sm-5" >
+
+
+            <div class="card shadow mb-4">
+
+
+                <div class="card-header py-3 bg-primary">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fa fa-info-circle"></i> 快速修改
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                        <tr style="display: none">
+                            <td><label>類型</label></td>
+                            <td>
+                                {{ form.device_type_id }}
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><label>資產編號</label></td>
+                            <td>
+                                {{ form.number }}
+
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td><label>狀態</label></td>
+                            <td>
+                                {{ form.device_status_id }}
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>{{ form.tag.label_tag }}</td>
+                            <td>
+                                {{ form.tag }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>{{ form.size.label_tag }}</td>
+                            <td>
+                                {{ form.size }}
+                            </td>
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+
+                </div>
+                <div class="panel-body">
+
+                </div>
+            </div>
+
+
+            <div class="card shadow mb-4">
+
+
+                <div class="card-header py-3 bg-warning">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fa fa-info-circle"></i> 機房管理
+                    </h6>
+                </div>
+                <div class="card-body">
+
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td><label>機房</label></td>
+                            <td><select class="selectpicker form-control" title="" name='idc' id="id_idc">
+                                <option value="">-------</option>
+                                {% for idc in idc_list %}
+                                    {% if idc.id == asset.rack.idc.id %}
+                                        <option value="{{ idc.id }}" selected>{{ idc }}</option>
+                                    {% else %}
+                                        <option value="{{ idc.id }}">{{ idc }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><label>機櫃</label></td>
+                            <td>{{ form.rack }}</td>
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+{% endblock %}
+
+
+
+{% block extra-js %}
+
+
+    <script>
+
+        var idc_data = {{ idc_data|safe }};
+
+        function foo(ele) {
+
+            var id_racks = $("#id_rack");
+            id_racks.find('option')
+                .remove()
+                .end()
+                .append('<option value="">--------</option>')
+                .val('')
+            ;
+
+            $.each(idc_data[$(ele).val()], function (i, item) {
+                id_racks.append($('<option>', {
+                    value: item.id,
+                    text: item.name,
+                }));
+            });
+
+        }
+
+        $(document).ready(function () {
+
+        }).on('click', '.btn-update', function () {
+            console.log('.btn-update');
+
+
+
+            $.ajax({
+                url: '',
+                type: 'POST',
+                data: {
+                    'device_type_id': $("#id_device_type_id").val(),
+                    'device_status_id': $("#id_device_status_id").val(),
+                    'tag': $("#id_tag").val(),
+                    'rack': $("#id_rack").val(),
+                    'size': $("#id_size").val(),
+                    'number': $("#id_number").val(),
+                },
+
+
+            }).done(function (callback) {
+                console.log(callback);
+                toastr.success("更新成功")
+            }).fail(function () {
+                toastr.success("更新失敗")
+            })
+
+
+        }).on('change', '#id_idc', function () {
+            var id_racks = $("#id_rack");
+            id_racks.find('option')
+                .remove()
+                .end()
+                .append('<option value="">--------</option>')
+                .val('')
+            ;
+
+            $.each(idc_data[$(this).val()], function (i, item) {
+                id_racks.append($('<option>', {
+                    value: item.id,
+                    text: item.name,
+                }));
+            });
+        })
+
+
+    </script>
+
+{% endblock %}

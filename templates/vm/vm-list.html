@@ -1,0 +1,224 @@
+{% extends 'vm/base.html' %}
+{% load static %}
+{% load host_tags %}
+{% load widget_tweaks %}
+
+{% block title %}CMDB{% endblock %}
+
+
+
+
+{% block content %}
+
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page">VM</li>
+      <li class="breadcrumb-item active" aria-current="page">
+        實例列表
+      </li>
+    </ol>
+  </nav>
+
+
+
+  <div class="row">
+
+    <div class="col-md-2">
+
+      <a href="{% url 'vm:vm-create' %}" class="btn btn-primary">新增實例</a>
+    </div>
+
+
+    <!-- 篩選 -->
+    <div class="col-md-10">
+
+      <form class="form-inline float-right" method="get" style="display: none">
+
+        <input type="text" class="form-control" name='contacts' id="search" placeholder=""
+               value="{{ paginator.per_page }}" style="display: none">
+
+        <input type="submit" class="btn btn-primary">
+      </form>
+    </div>
+  </div>
+
+
+  <div class="row" style="margin-top: 20px">
+    <div class="col-md-12">
+      <table class="table table-hover table-bordered text-center table-sm">
+        <thead class="thead-light">
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>實例ID</th>
+          <th>狀態</th>
+          <th>狀態檢查</th>
+          <th>管理IP</th>
+          <th>功能</th>
+        </tr>
+        </thead>
+        <tbody>
+
+
+        {% for vm in vm_list %}
+
+          <tr name="{{ vm.name }}">
+            <td>{{ forloop.counter }}</td>
+            <td>{{ vm.name }}</td>
+            <td>{{ vm.task }}</td>
+            <td name="status">
+              {% if vm.get_status_display == 'running' %}
+                <span><i class="fa fa-circle" style="color: #00bb00"></i> {{ vm.get_status_display }}</span>
+              {% elif vm.get_status_display == '構建失敗' %}
+                <span><i class="fa fa-circle" style="color: red"></i> {{ vm.get_status_display }}</span>
+              {% else %}
+                <span><i class="fa fa-circle"></i> {{ vm.get_status_display }}</span>
+              {% endif %}
+
+            </td>
+
+            <td name="check">
+              {% if 'pass' in vm.check %}
+                <span><i class="fas fa-check-circle" style="color: #00bb00"></i> {{ vm.check }}</span>
+              {% elif vm.check == '即將銷毀' %}
+                {{ vm.check }}...
+              {% else %}
+                {{ vm.check }}
+              {% endif %}
+
+
+            </td>
+            <td name="manage_ip">
+              {{ vm.manage_ip|default:'' }}
+            </td>
+
+            <td name="pems">
+              {% if vm.is_finish %}
+                <a href="{% url 'pems' vm.name %}.pem" class="btn btn-dark btn-sm">
+                  連接
+                </a>
+
+              {% else %}
+                <a class="btn btn-sm btn-default disabled">
+                    未完成
+                </a>
+
+              {% endif %}
+
+
+            </td>
+
+          </tr>
+
+
+
+        {% endfor %}
+
+
+        </tbody>
+        <tfoot>
+
+
+        </tfoot>
+
+      </table>
+      <nav aria-label="Page navigation">
+
+        <ul class="pagination float-left">
+          共{{ paginator.count }}筆
+          <label style="padding-left: 20px">顯示</label>
+          <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit" id='contacts'>
+            {% for i in page_list %}
+              {% if i == paginator.per_page %}
+                <option value={{ i }} selected>{{ i }}</option>
+              {% else %}
+                <option value={{ i }}>{{ i }}</option>
+              {% endif %}
+            {% endfor %}
+
+          </select>筆
+        </ul>
+
+
+        <ul class="pagination float-right">
+          {% get_pageer page_obj search_field %}
+        </ul>
+
+      </nav>
+    </div>
+  </div>
+
+
+
+{% endblock %}
+
+
+{% block extra-js %}
+
+
+  <script>
+
+      $(document).ready(function () {
+          $('.table').DataTable(
+              {
+                  "searching": false,
+                  "paging": false,
+                  "bInfo": false,
+
+
+              }
+          );
+      }).on('change', ".contacts", function () {
+          console.log('onchange');
+          $('.form-inline [name="contacts"]').val($(this).val())
+          $('.form-inline').submit()
+      })
+
+
+      var socket = new WebSocket("ws://127.0.0.1:8000/cmdb/vm/echo_once/");
+      console.log(socket);
+      socket.onopen = function () {
+          socket.send("发送数据");
+          console.log('WebSocket open');//成功连接上Websocket
+      };
+      socket.onmessage = function (e) {
+
+          var data = JSON.parse(e.data);
+          {#console.log(data.name);#}
+          {#console.log(data.status);#}
+          if (data) {
+              var tr = $('tr[name=' + data.name + ']');
+
+              if (data.status == '開始初始化中') {
+                  tr.find('td[name="status"]').text("⏳" + data.status);
+              } else if (data.status == 'running') {
+                  tr.find('td[name="pems"]').show();
+                  tr.find('td[name="status"]').html(
+                      '<span><i class="fas fa-circle " style="color: #00bb00"></i> ' + data.status + '</span>'
+                  );
+              } else if (data.status == 'stop') {
+
+                  tr.find('td[name="status"]').html(
+                      '<span><i class="fas fa-circle " style="color: #df0b00"></i> ' + data.status + '</span>'
+                  );
+              }
+
+              if (data.check) {
+                  tr.find('td[name="check"]').html('<span><i class="fas fa-check-circle" style="color: #00bb00"></i> ' + data.check + '</span>');
+              }
+
+              if (data.manage_ip) {
+                  tr.find('td[name="manage_ip"]').text(data.manage_ip);
+              }
+          }
+
+
+          {#console.log(e.data('name'));#}
+
+      };
+
+  </script>
+
+
+{% endblock %}

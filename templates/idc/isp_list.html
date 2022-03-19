@@ -1,0 +1,175 @@
+{% extends 'idc/base.html' %}
+}{% load static %}
+{% load host_tags %}
+
+{% block title %}CMDB{% endblock %}
+
+
+
+
+{% block content %}
+
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">機房管理</li>
+            <li class="breadcrumb-item" aria-current="page">ISP列表</li>
+        </ol>
+    </nav>
+
+
+
+
+
+    <div class="row mb-3">
+
+        <div class="col-md-4">
+            <a href="{% url 'asset:isp-create' %}" class="btn btn-primary">新增ISP</a>
+        </div>
+
+
+        <!-- 篩選 -->
+        <div class="col-md-8 text-right">
+
+            <form class="form-inline" method="get" style="display: none">
+
+                    <input type="text" class="form-control" name='contacts' id="search" placeholder="" value="{{ paginator.per_page }}" style="display: none">
+
+                 <input type="submit" class="btn btn-primary">
+
+
+            </form>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+         <table class="table table-hover table-bordered text-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+
+                    <th>名稱</th>
+                    <th>IP範圍</th>
+                    <th>NETMASK</th>
+                    <th>GETEWAY</th>
+                    <th>備註</th>
+                    <th>功能</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for isp in isp_list %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+
+                        <td>{{ isp.name }}</td>
+                        <td>{{ isp.ip_range }}</td>
+                        <td>{{ isp.netmask }}</td>
+                        <td>{{ isp.geteway }}</td>
+                        <td>{{ isp.remark|default:'' }}</td>
+                        <td>
+
+                            <a href="{% url 'asset:isp-update' isp.id %}" class="btn btn-sm btn-info active">更新</a>
+                            <a class="btn btn-sm btn-danger m-l-xs btn-delete active" data-uid="{{ isp.id }}"
+                               data-name="[{{ isp.name }}]">删除</a>
+                        </td>
+
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+                <tfoot>
+
+                </tfoot>
+
+            </table>
+                    <nav aria-label="Page navigation">
+
+                    <ul class="pagination float-left">
+                        共{{ paginator.count }}筆
+                        <label style="padding-left: 20px">顯示</label>
+                        <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit"
+                                id='contacts'>
+                            {% for i in page_list %}
+                                {% if i == paginator.per_page %}
+                                    <option value={{ i }} selected>{{ i }}</option>
+                                {% else %}
+                                    <option value={{ i }}>{{ i }}</option>
+                                {% endif %}
+                            {% endfor %}
+
+                        </select>筆
+                    </ul>
+
+
+                    <ul class="pagination float-right">
+                        {% get_pageer page_obj search_field %}
+                    </ul>
+
+                </nav>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+
+
+
+{% block extra-js %}
+
+    <script>
+
+        $(document).ready(function () {
+            $('.table').DataTable(
+                {
+                    "searching": false,
+                    "paging": false,
+                    "bInfo": false,
+
+
+                }
+            );
+        })
+            .on('click', '.btn-delete', function () {
+                var $this = $(this);
+
+                var the_url = "{% url 'asset:isp-delete' 0 %}".replace('0', $this.data('uid'));
+                swal({
+                    title: "你確定刪除嗎",
+                    text: $this.data('name'),
+                    type: "warning",
+                    showCancelButton: true,
+                    cancelButtonText: '取消',
+                    confirmButtonColor: "#ed5565",
+                    confirmButtonText: '確認',
+                    closeOnConfirm: true
+                }, function () {
+                    $.ajax({
+                        url: the_url,
+                        type: 'POST',
+
+                    }).done(function () {
+                        document.location.reload();
+                    });
+                });
+
+            }).on('change', ".contacts", function () {
+                console.log('onchange');
+                $('.form-inline [name="contacts"]').val($(this).val())
+                $('.form-inline').submit()
+            })
+
+
+    </script>
+
+
+{% endblock %}

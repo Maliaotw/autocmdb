@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html>
+
+{% load static %}
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用戶登入</title>
+
+    <link rel="icon" type="image/x-icon" href="">
+    <link rel="shortcut icon" type="image/x-icon" href="">
+    <link href="{% static 'css/bootstrap3/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/signin.css' %}">
+    <script src="{% static 'js/jquery-3.3.1.js' %}"></script>
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="text-center">
+<form class="form-signin" method="post">
+    {% csrf_token %}
+    <h1 class="h3 mb-3 font-weight-normal">用戶登入</h1>
+
+    <input type="text"  name="username" class="form-control" placeholder="username" required="" autofocus="" value="admin"
+           style=" background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;">
+
+    <input type="password" name="password" class="form-control mt-1" placeholder="Password" required="" value="admin">
+    <button class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
+
+
+</form>
+
+
+</body>
+</html>

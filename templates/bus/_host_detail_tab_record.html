@@ -1,0 +1,18 @@
+{% for hostrecord in host.hostrecord_set.all %}
+    <div class="card"  style="margin-bottom: 20px">
+
+
+        <div class="card-body">
+            <h5 class="card-title"> {{ hostrecord.title }}</h5>
+            <p  class="overflow-auto" style="min-height: 60px;max-height: 80px">
+                {{ hostrecord.summary|linebreaksbr }}
+            </p>
+            <span>
+                <i class="glyphicon glyphicon-calendar"></i>
+                {{ hostrecord.create_date }}
+            </span>
+        </div>
+    </div>
+
+
+{% endfor %}

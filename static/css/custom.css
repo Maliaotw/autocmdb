@@ -1,0 +1,62 @@
+
+.list-unstyled li a {
+    font-size: 0.9em !important;
+    padding-left: 30px !important;
+
+
+}
+
+
+.list-unstyled li {
+    padding: 10px;
+}
+
+
+.fa-lock:focus, .fa-lock:hover {
+    color: #337ab7;
+    cursor: pointer;
+}
+
+.fa-file-alt:focus, .fa-file-alt:hover {
+    color: #337ab7;
+    cursor: pointer;
+
+}
+
+.fa-file:focus, .fa-file:hover {
+    color: #337ab7;
+    cursor: pointer;
+}
+
+
+.fa-lock-open:focus, .fa-lock-open:hover {
+    color: #337ab7;
+    cursor: pointer;
+}
+
+.fa-eye:focus, .fa-eye:hover {
+    color: #337ab7;
+    cursor: pointer;
+}
+
+.fa-pen:focus, .fa-pen:hover, .fa-pen-alt:focus, .fa-pen-alt:hover {
+    color: #337ab7;
+    cursor: pointer;
+}
+
+.fa-trash-alt:focus, .fa-trash-alt:hover {
+    color: #337ab7;
+    cursor: pointer;
+}
+
+.list-group-item.active > a {
+
+    color: white;
+}
+
+span.btn:focus, span.btn:hover {
+    color: #337ab7;
+    text-decoration: none;
+}
+
+

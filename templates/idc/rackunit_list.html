@@ -1,0 +1,428 @@
+{% extends 'idc/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}CMDB{% endblock %}
+
+{% block head %}
+
+    <style>
+
+        #rack-table td, #rack-table th {
+            font: bold 12px Verdana, sans-serif;
+            border: 1px solid black;
+        }
+
+        #rack-table.table > tbody > tr > td {
+            padding: 4px;
+
+        }
+
+        .form-group .col-md-9 {
+            padding-top: 7px;
+            margin-bottom: 0;
+        }
+
+    </style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">機房管理</li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a href="{% url 'asset:rack-list' %}">機櫃列表</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ rack }}
+            </li>
+        </ol>
+    </nav>
+
+
+    <div class="row">
+
+        <div class="col-md-12">
+
+
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+
+                <li class="nav-item">
+                    <a class="nav-link active" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab"
+                       aria-controls="pills-profile" aria-selected="false">設備調整</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab"
+                       aria-controls="pills-home" aria-selected="true">基本資訊</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab"
+                       aria-controls="pills-contact" aria-selected="false">ISP接入</a>
+                </li>
+            </ul>
+
+
+            <div class="tab-content" id="pills-tabContent">
+
+
+             <div class="tab-pane fade show active" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                    <div class="row">
+                        <div class="col-sm-6">
+
+                            <p class="header text-center">設備清單</p>
+
+                            <table class="table table-sm">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+
+                                    <th>名稱</th>
+                                    <th>型號</th>
+                                    <th>機型大小</th>
+                                    <th>位置</th>
+                                    <th>層數</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for rackunit in rackunit_list %}
+
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+
+
+                                        <td>
+                                            <a href="{% url 'asset:asset-update' rackunit.asset.id %}">{{ rackunit.asset.content_object.name }}</a>
+                                        </td>
+                                        <td>
+                                            {{ rackunit.asset.content_object.model }}
+                                        </td>
+
+                                        <td>{{ rackunit.asset.size }}(U)</td>
+                                        <td name="position">
+
+                                            <select class="form-control select-pos">
+                                                <option value="">------</option>
+
+                                                {% for i in rackunit.position_choice %}
+
+
+                                                    {% if i.0 == rackunit.position %}
+                                                        <option value="{{ i.0 }}" selected>{{ i.1 }}</option>
+                                                    {% else %}
+                                                        <option value="{{ i.0 }}">{{ i.1 }}</option>
+                                                    {% endif %}
+
+
+
+                                                {% endfor %}
+
+                                            </select>
+
+                                        </td>
+                                        <td name="num">
+
+                                            {% if rackunit.position %}
+                                                <select class="form-control select-num"
+                                                        data-name="{{ rackunit.name.id }}"
+                                                        data-asset="{{ rackunit.asset.id }}"
+                                                        data-id="{{ rackunit.id }}">
+                                                    <option value="">-------</option>
+                                                    {% for i in height %}
+
+                                                        {% if i == rackunit.num %}
+                                                            <option value="{{ i }}" selected>{{ i }}</option>
+                                                        {% else %}
+                                                            {% if not i in exclude %}
+                                                                <option value="{{ i }}">{{ i }}</option>
+                                                            {% endif %}
+
+                                                        {% endif %}
+
+                                                    {% endfor %}
+                                                </select>
+                                            {% else %}
+                                                <select class="form-control select-num"
+                                                        data-name="{{ rackunit.name.id }}"
+                                                        data-asset="{{ rackunit.asset.id }}" data-id="{{ rackunit.id }}"
+                                                        disabled>
+                                                    <option value="">-------</option>
+                                                    {% for i in height %}
+
+                                                        {% if i == rackunit.num %}
+                                                            <option value="{{ i }}" selected>{{ i }}</option>
+                                                        {% else %}
+                                                            {% if not i in exclude %}
+                                                                <option value="{{ i }}">{{ i }}</option>
+                                                            {% endif %}
+
+                                                        {% endif %}
+
+                                                    {% endfor %}
+                                                </select>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+
+                                </tbody>
+                                <tfoot>
+
+                                </tfoot>
+
+                            </table>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <p class="header text-center">機櫃</p>
+                            <div class="row">
+
+                                <div class="col-sm-6">
+
+
+                                    <table class="table" id="rack-table">
+
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10%;border-left: 0px;border-top: 0px;"></th>
+
+                                            <th style="width: 90%" class="text-center">Front</th>
+
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                        {% for i in height %}
+                                            <tr>
+                                                <td class="text-center"
+                                                    style="background-color: black;color: white;">{{ i }}</td>
+
+                                                {% get_rack rack 'Front' i %}
+                                            </tr>
+
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-sm-6">
+
+                                    <table class="table" id="rack-table">
+
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10%;border-left: 0px;border-top: 0px;"></th>
+
+                                            <th style="width: 90%" class="text-center">Back</th>
+
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                        {% for i in height %}
+                                            <tr>
+                                                <td class="text-center" style="background-color: black;color: white;">
+                                                    {{ i }}
+                                                </td>
+
+                                                {% get_rack rack 'Back' i %}
+
+                                            </tr>
+
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="tab-pane fade" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                    <div class="row">
+                        <div class="col-sm-12" style='padding: 5px'>
+                            <div class="card" style='padding: 5px'>
+                                <div class="container">
+                                    <form style="padding:20px">
+
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">IDC</div>
+                                            <div class="col-md-9 ">{{ rack.idc }}</div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">地址</div>
+                                            <div class="col-md-9 ">#</div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">廠商</div>
+                                            <div class="col-md-9">#</div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">聯繫人</div>
+                                            <div class="col-md-9">#</div>
+                                        </div>
+
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">機櫃號</div>
+                                            <div class="col-md-9">{{ rack.name }}</div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">最大功率</div>
+                                            <div class="col-md-9">{{ rack.max_power }} (W)</div>
+                                        </div>
+
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">高度</div>
+                                            <div class="col-md-9">{{ rack.height }}U</div>
+                                        </div>
+
+
+                                        <div class="form-group row">
+                                            <div class="col-md-2 control-label">備註</div>
+                                            <div class="col-md-9">{{ rack.remark }}</div>
+                                        </div>
+
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+                    <div class="col-sm-12" style='padding: 5px'>
+                        <div class="panel panel-default" style='padding: 5px'>
+
+
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+
+                                    <th>名稱</th>
+                                    <th>IP範圍</th>
+                                    <th>NETMASK</th>
+                                    <th>GETEWAY</th>
+                                    <th>備註</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for isp in isps_list %}
+
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+
+
+                                        <td>{{ isp.name }}</td>
+                                        <td>{{ isp.ip_range }}</td>
+                                        <td>{{ isp.netmask }}</td>
+                                        <td>{{ isp.geteway }}</td>
+                                        <td>{{ isp.remark|default:'' }}</td>
+
+
+                                    </tr>
+
+                                {% endfor %}
+
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+
+
+
+{% endblock %}
+
+
+
+
+{% block extra-js %}
+
+
+    <script>
+
+        $(document).ready(function () {
+
+        })
+            .on('change', '.select-pos', function () {
+                var $this = $(this);
+
+                if ($this.val() != '') {
+                    var tr = $this.closest('tr');
+                    var num = tr.find("td[name='num'] select");
+                    num.prop("disabled", false);
+
+                }
+
+
+            })
+            .on('change', '.select-num', function () {
+                var $this = $(this);
+
+                var tr = $this.closest('tr');
+
+                if (!$this.val()) {
+                    var position = ''
+                } else {
+                    var position = tr.find("td[name='position'] select").val();
+                }
+
+
+                var data = {
+
+                    'asset': $this.data('asset'),
+                    'name': $this.data('name'),
+                    'num': $this.val(),
+                    'position': position,
+                };
+                var the_url = "{% url 'asset:rackunit-update' 0 %}".replace('0', $this.data('id'));
+
+                $.ajax({
+                    url: the_url,
+                    type: 'POST',
+                    data: data,
+
+
+                }).done(function () {
+                    document.location.reload();
+                })
+
+
+            })
+
+
+    </script>
+
+{% endblock %}

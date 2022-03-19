@@ -1,0 +1,38 @@
+---
+- name: VMware Module TEST
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - name: Clone template to new VM
+      vmware_guest:
+        # Vcenter needed informations
+        hostname: "{{ VCENTER_SERVER }}"
+        username: "{{ VCENTER_USER }}"
+        password: "{{ VCENTER_PASS }}"
+        validate_certs: False  #关闭证书认证
+        state: present
+
+        # VM identification
+        datacenter: "BI"
+        # cluster: "17.16.10.140"
+        folder: ""
+        name: "{{ newhost }}"
+
+        disk:
+        - datastore: "datastore1"
+          size_gb: "{{ size_gb }}"
+          type: "eagerzeroedthick"
+
+        hardware:
+          memory_mb: "{{ memory_mb }}"
+          num_cpus: "{{ num_cpus }}"
+          scsi: paravirtual
+          hotadd_cpu: True
+          hotremove_cpu: True
+          hotadd_memory: True
+
+        # vm to clone
+        template: "centos7"
+        wait_for_ip_address: yes
+
+

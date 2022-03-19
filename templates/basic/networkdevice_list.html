@@ -1,0 +1,186 @@
+{% extends 'basic/base.html' %}
+{% load static %}
+{% load host_tags %}
+{% load widget_tweaks %}
+
+{% block title %}網路設備列表{% endblock %}
+
+
+{% block content %}
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">基礎資源</li>
+            <li class="breadcrumb-item active" aria-current="page">網路設備列表</li>
+        </ol>
+    </nav>
+
+
+
+    <div class="row">
+
+
+        <div class="col-md-4">
+            <a href="{% url 'asset:netware-create' %}" class="btn btn-primary">新增設備</a>
+        </div>
+
+
+        <!-- 篩選 -->
+        <div class="col-md-8 ">
+
+            <form class="form-inline float-right" method="get">
+                <input type="text" class="form-control" name='contacts' id="search" placeholder=""
+                       value="{{ paginator.per_page }}" style="display: none">
+
+                {{ filterset.form.name.label_tag }}
+                {% render_field filterset.form.name class="form-control mr-2" %}
+                {{ filterset.form.sub_asset_type.label_tag }}
+                {% render_field filterset.form.sub_asset_type class="form-control mr-2" %}
+
+                <input class="btn btn-primary" type="submit"/>
+            </form>
+
+
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 20px">
+
+        <div class="col-md-12">
+
+            <table class="table table-hover table-bordered text-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+
+                    <th>名稱</th>
+                    <th>類型</th>
+                    <th>管理IP</th>
+                    <th>端口個數</th>
+                    <th>保固日期</th>
+                    <th>功能</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for netware in networkdevice_list %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+                        <td>{{ netware.name }}</td>
+                        <td>{{ netware.get_sub_asset_type_display }}</td>
+                        <td>{{ netware.manage_ip }}</td>
+                        <td>{{ netware.port_num }}</td>
+                        <td>{{ netware.warranty_date|default:'' }}</td>
+                        <td>
+                            <a href="{% url 'asset:netware-update' netware.id %}"
+                               class="btn btn-sm btn-info active">更新</a>
+                            <a class="btn btn-sm btn-danger btn-delete active" data-uid="{{ netware.id }}"
+                               data-name="[{{ netware.name }}]">删除</a>
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+                <tfoot>
+
+                </tfoot>
+
+            </table>
+
+            <nav aria-label="Page navigation">
+
+                <ul class="pagination float-left">
+                    共{{ paginator.count }}筆
+                    <label style="padding-left: 20px">顯示</label>
+                    <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit"
+                            id='contacts'>
+                        {% for i in page_list %}
+                            {% if i == paginator.per_page %}
+                                <option value={{ i }} selected>{{ i }}</option>
+                            {% else %}
+                                <option value={{ i }}>{{ i }}</option>
+                            {% endif %}
+                        {% endfor %}
+
+                    </select>筆
+                </ul>
+
+
+                <ul class="pagination float-right">
+                    {% get_pageer page_obj search_field %}
+                </ul>
+
+            </nav>
+        </div>
+
+    </div>
+
+
+
+
+
+{% endblock %}
+
+
+
+{% block extra-js %}
+    <script>
+
+        {% for k,v in search_field.items %}
+            $(".selectpicker[name='{{ k }}']").selectpicker('val', "{{ v }}");
+        {% endfor %}
+
+    </script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            $('.table').DataTable(
+                {
+                    "searching": false,
+                    "paging": false,
+                    "bInfo": false,
+
+
+                }
+            );
+        })
+            .on('click', '.btn-delete', function () {
+                var $this = $(this);
+
+                var the_url = "{% url 'asset:netware-delete' 0 %}".replace('0', $this.data('uid'));
+                swal({
+                    title: "你確定刪除嗎",
+                    text: $this.data('name'),
+                    type: "warning",
+                    showCancelButton: true,
+                    cancelButtonText: '取消',
+                    confirmButtonColor: "#ed5565",
+                    confirmButtonText: '確認',
+                    closeOnConfirm: true
+                }, function () {
+                    $.ajax({
+                        url: the_url,
+                        type: 'POST',
+
+                    }).done(function () {
+                        document.location.reload();
+                    });
+                });
+            })
+            .on('change', ".contacts", function () {
+                console.log('onchange');
+                $('.form-inline [name="contacts"]').val($(this).val())
+                $('.form-inline').submit()
+            })
+
+    </script>
+
+
+
+{% endblock %}

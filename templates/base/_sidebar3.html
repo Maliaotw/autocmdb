@@ -1,0 +1,181 @@
+<div class="container-fluid">
+
+
+    <div class="col-sm-2 col-md-2 col-lg-2 sidebar" data-status="show">
+
+
+        {% block sideber_menu %}
+
+            {% url 'dashboard' as dashboard_url %}
+            {% url 'asset:asset-list' as asset_url %}
+            {% url 'asset:idrac-list' as idrac_url %}
+            {% url 'asset:netware-list' as netware_url %}
+            {% url 'asset:tag-list' as tag_url %}
+
+            {% url 'host:host-list' as host_url %}
+            {% url 'host:busunit-list' as busunit_url %}
+
+            {% url 'asset:idc-list' as idc_url %}
+            {% url 'asset:rack-list' as rack_url %}
+            {% url 'asset:isp_list' as isp_url %}
+
+            {% url 'asset:pt-list' as pt_url %}
+            {% url 'asset:cmd-list' as cmd_url %}
+
+            {% url 'host:hostrecord-list' as hostrecord_url %}
+            {% url 'host:cmdrecord-list' as cmdrecord_url %}
+
+            <div class="row">
+            <!--- nav-sidebar -->
+            <ul class="nav nav-sidebar">
+
+                <ul class="list-group">
+
+                    <a href="{{ dashboard_url }}"
+                       class="list-group-item {% if dashboard_url == request.path %}active{% endif %}"><span>
+                            <i class="fa fa-dashboard"></i> 儀表盤
+                        </span></a>
+
+
+                    <li class="">
+                        <a href="#BasicSubmenu" data-toggle="collapse" aria-expanded="false"
+                           class="list-group-item dropdown-toggle collapsed"><span> <i
+                                class="fa fa-sitemap"></i> 基礎資源</span><span style="float:right"><i
+                                class="fa fa-angle-right"></i></span></a>
+
+                        <ul class="list-unstyled collapse" id="BasicSubmenu" style="">
+                            <li class="list-group-item  {% if asset_url in request.path %}active{% endif %}"><a
+                                    href='{{ asset_url }}'>資產列表</a></li>
+                            <li class="list-group-item  {% if idrac_url in request.path %}active{% endif %} "><a
+                                    href='{{ idrac_url }}'>物理服務器</a></li>
+                            <li class="list-group-item {% if netware_url in request.path %}active{% endif %} "><a
+                                    href='{{ netware_url }}'>網路設備</a></li>
+                            <li class="list-group-item  {% if tag_url in request.path %}active{% endif %}"><a
+                                    href='{{ tag_url }}'>標籤列表</a></li>
+                        </ul>
+                    </li>
+
+
+                    <li class="">
+                        <a href="#AssetSubmenu" data-toggle="collapse" aria-expanded="false"
+                           class="list-group-item dropdown-toggle collapsed"><span> <i
+                                class="fa fa-sitemap"></i> 業務資源</span><span style="float:right"><i
+                                class="fa fa-angle-right"></i></span></a>
+
+                        <ul class="list-unstyled collapse" id="AssetSubmenu" style="">
+
+                            <li class="list-group-item {% if host_url in request.path %}active{% endif %} "><a
+                                    href='{{ host_url }}'>虛擬機</a></li>
+
+                            <li class="list-group-item {% if busunit_url in request.path %}active{% endif %} "><a
+                                    href='{{ busunit_url }}'>業務線</a></li>
+
+                        </ul>
+                    </li>
+
+                    <li class="">
+                        <a href="#IDCSubmenu" data-toggle="collapse" aria-expanded="false"
+                           class="list-group-item dropdown-toggle collapsed"><span> <i
+                                class="fa fa-sitemap"></i> 機房管理</span><span style="float:right"><i
+                                class="fa fa-angle-right"></i></span></a>
+
+                        <ul class="list-unstyled collapse" id="IDCSubmenu" style="">
+
+                            <li class="list-group-item {% if idc_url in request.path %}active{% endif %} "><a
+                                    href='{{ idc_url }}'>機房列表</a></li>
+
+                            <li class="list-group-item {% if rack_url in request.path %}active{% endif %} "><a
+                                    href='{{ rack_url }}'>機櫃列表</a></li>
+                            <li class="list-group-item {% if isp_url in request.path %}active{% endif %} "><a
+                                    href='{{ isp_url }}'>ISP資訊</a></li>
+
+                        </ul>
+                    </li>
+
+                    <li class="">
+                        <a href="#TaskSubmenu" data-toggle="collapse" aria-expanded="false"
+                           class="list-group-item dropdown-toggle collapsed"><span> <i
+                                class="fa fa-sitemap"></i> 作業中心</span><span style="float:right"><i
+                                class="fa fa-angle-right"></i></span></a>
+
+                        <ul class="list-unstyled collapse" id="TaskSubmenu" style="">
+
+                            <li class="list-group-item  {% if pt_url in request.path %}active{% endif %}"><a
+                                    href='{{ pt_url }}'>任務列表</a></li>
+
+                            <li class="list-group-item  {% if cmd_url in request.path %}active{% endif %}"><a
+                                    href='{{ cmd_url }}'>命令執行</a></li>
+                        </ul>
+                    </li>
+
+
+                    <li class="">
+                        <a href="#AuditsSubmenu" data-toggle="collapse" aria-expanded="false"
+                           class="list-group-item dropdown-toggle collapsed"><span> <i
+                                class="fa fa-sitemap"></i> 日誌審計</span><span style="float:right"><i
+                                class="fa fa-angle-right"></i></span></a>
+
+                        <ul class="list-unstyled collapse" id="AuditsSubmenu" style="">
+
+                            <li class="list-group-item  {% if hostrecord_url in request.path %}active{% endif %}"><a
+                                    href='{{ hostrecord_url }}'>資產變更</a></li>
+
+                            <li class="list-group-item  {% if cmdrecord_url in request.path %}active{% endif %}"><a
+                                    href='{{ cmdrecord_url }}'>命令執行</a></li>
+                        </ul>
+                    </li>
+
+
+                </ul>
+
+            </ul>
+
+
+
+        {% endblock %}
+
+        </div>
+
+
+        <div class="col-sm-10 col-sm-offset-2 col-md-10 col-lg-10 col-md-offset-2 main">
+
+
+            {% block content %}
+                <h1 class="page-header">Dashboard</h1>
+
+                <h2 class="sub-header">Section title</h2>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Header</th>
+                            <th>Header</th>
+                            <th>Header</th>
+                            <th>Header</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>1,001</td>
+                            <td>Lorem</td>
+                            <td>ipsum</td>
+                            <td>dolor</td>
+                            <td>sit</td>
+                        </tr>
+                        <tr>
+                            <td>1,002</td>
+                            <td>amet</td>
+                            <td>consectetur</td>
+                            <td>adipiscing</td>
+                            <td>elit</td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+            {% endblock %}
+        </div>
+    </div>
+</div>

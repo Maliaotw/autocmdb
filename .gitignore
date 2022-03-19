@@ -1,0 +1,13 @@
+*.env
+.idea
+*.pyc
+*.DS_Store
+*.log
+*.pid
+__pycache__
+cors-json-file.json
+credentials.json
+deploy.md
+dev.md
+.gcloudignore
+.python-version

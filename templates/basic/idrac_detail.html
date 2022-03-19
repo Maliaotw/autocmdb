@@ -1,0 +1,388 @@
+{% extends 'basic/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}服務器列表{% endblock %}
+
+
+{% block head %}
+    <style>
+
+        .card-body .table td {
+            border-top: 0px !important;
+        }
+
+
+        .panel-warning > .panel-heading {
+            background-color: #f8ac59;
+            border-color: #f8ac59;
+            color: #ffffff;
+        }
+
+        .swal-wide {
+            width: 600px !important;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            height: 300px;
+        }
+
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">基礎資源</li>
+            <li class="breadcrumb-item" aria-current="page">
+
+                <a href="{% url 'asset:idrac-list' %}">服務器列表</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ idrac.idrac_ip }}
+            </li>
+        </ol>
+    </nav>
+
+
+    <div class="row">
+        <div class="col-md-10">
+            <div class="panel-options">
+                <ul class="nav nav-tabs">
+                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="pill" href="#tab_asset" role="tab"
+                               aria-controls="pills" aria-selected="true">資產詳情</a>
+                        </li>
+
+
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="pill" href="#tab_record" role="tab"
+                               aria-controls="pills" aria-selected="false">變更紀錄</a>
+                        </li>
+                    </ul>
+
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-2 text-right ">
+            <button class="btn btn-xs btn-danger btn-delete" data-uid="{{ idrac.id }}"
+                    data-name="[{{ idrac.idrac_ip }}]"><i class="fa fa-trash"></i>刪除
+            </button>
+
+
+            <button class="btn btn-success btn-update">
+                <i class="fa fa-upload"></i>更新
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-sm-7" style="background-color: #f5f5f5">
+            <div class="tab-content">
+
+                <!-- /硬件信息 Tab -->
+                <div class="tab-pane fade show active" id="tab_asset">
+
+
+                    {% include 'basic/_idrac_detail_tab_asset.html' %}
+
+                </div>
+
+
+                <!-- /任務列表 Tab -->
+                <div class="tab-pane" id="tab_tasks">
+
+                    <table class="table table-striped">
+
+                        <thead>
+                        <th>TASK ID</th>
+                        <th>狀態</th>
+                        <th>執行日期</th>
+                        <th>結果</th>
+                        </thead>
+                        <tbody>
+                        {% for t in idrac.get_taskdetail %}
+                            <tr>
+                                <td>{{ t.taskid.task_id }}</td>
+                                <td>{{ t.taskid.status }}</td>
+                                <td>{{ t.create_date }}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-xs" id="btn_taskresult"
+                                            data-id="{{ t.taskid.id }}">結果
+                                    </button>
+
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+                <!-- /更变纪录 Tab -->
+                <div class="tab-pane" id="tab_record">
+                </div>
+
+
+            </div>
+        </div>
+
+
+        <div class="col-sm-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fa fa-info-circle"></i> 快速修改
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td><label>狀態</label></td>
+                            <td>
+                                <span class="pull-right">
+                                {% if idrac.host %}
+
+                                    連接成功
+
+                                {% else %}
+                                    連接中
+                                {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>更新硬件信息:</label></td>
+                            <td>
+                                <span class="pull-right">
+                                    <button type="button" class="btn btn-primary btn-xs"
+                                            id="btn_refresh_asset" data-id="{{ idrac.id }}"
+                                    >刷新</button>
+                                </span>
+                            </td>
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-warning">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fa fa-info-circle"></i> IDRAC 設定
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+
+
+                        <tr>
+
+                            <td>{{ form.idrac_ip.label }}</td>
+                            <td>{{ form.idrac_ip }}</td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>{{ form.port.label }}</td>
+                            <td>{{ form.port }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>{{ form.user.label }}</td>
+                            <td>{{ form.user }}</td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>{{ form.passwd.label }}</td>
+                            <td>{{ form.passwd }}</td>
+
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+{% endblock %}
+
+
+
+{% block extra-js %}
+
+
+    <script>
+
+
+        $(document).ready(function () {
+
+        })
+            .on('click', '#btn_refresh_asset', function () {
+                console.log('btn_refresh_asset');
+                $this = $(this);
+                console.log($this.data('id'));
+
+                swal({
+                    title: "Checking...",
+                    text: "Please wait",
+                    imageUrl: "{% static 'img/loading.gif' %}",
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                });
+
+                $.ajax({
+                    url: '{% url 'api:idrac-refresh' %}',
+                    type: 'POST',
+                    data: {
+                        'id': $this.data('id'),
+                    },
+
+
+                }).done(function (callback) {
+                    //console.log(callback);
+                    //toastr.success("成功")
+                    $(".sweet-overlay, .sweet-alert").remove();
+                    swal("Loading", "done", "success");
+                }).fail(function () {
+                    toastr.success("失敗");
+                    swal({
+                        title: "Error!",
+                        text: "Here's my error message!",
+                        type: "error",
+                        confirmButtonText: "Cool"
+                    });
+
+                });
+
+
+            })
+            .on('click', '.btn-update', function () {
+                console.log('.btn-update');
+                $.ajax({
+                    url: '',
+                    type: 'POST',
+                    data: {
+                        'idrac_ip': $("#id_idrac_ip").val(),
+                        'port': $("#id_port").val(),
+                        'user': $("#id_user").val(),
+                        'passwd': $("#id_passwd").val(),
+                    },
+
+
+                }).done(function (callback) {
+                    console.log(callback);
+                    toastr.success("更新成功")
+                }).fail(function () {
+                    toastr.success("更新失敗")
+                });
+            })
+            .on('click', '.btn-delete', function () {
+                var $this = $(this);
+
+                var the_url = "{% url 'asset:idrac-delete' 0 %}".replace('0', $this.data('uid'));
+                swal({
+                    title: "你確定刪除嗎",
+                    text: $this.data('name'),
+                    type: "warning",
+                    showCancelButton: true,
+                    cancelButtonText: '取消',
+                    confirmButtonColor: "#ed5565",
+                    confirmButtonText: '確認',
+                    closeOnConfirm: true
+                }, function () {
+                    $.ajax({
+                        url: the_url,
+                        type: 'POST',
+
+                    }).done(function () {
+                        document.location.href = '{% url 'asset:idrac-list' %}';
+                    });
+                });
+            })
+            .on('click', '#btn_taskresult', function () {
+                console.log("taskresult");
+
+                var $this = $(this);
+                var the_url = "{% url 'api:taskresult-detail' 0 %}".replace('0', $this.data('id'));
+
+                swal({
+                    title: "Checking...",
+                    text: "Please wait",
+                    imageUrl: "{% static 'img/loading.gif' %}",
+                    showConfirmButton: true,
+                    allowOutsideClick: false,
+                    customClass: 'swal-wide',
+                }, function () {
+                    $(".sweet-overlay, .sweet-alert").remove()
+                });
+
+                $.ajax({
+                    url: the_url,
+                    type: 'GET',
+
+
+                }).done(function (callback) {
+                    console.log(callback);
+                    //toastr.success("成功")
+                    $(".sweet-alert > .sa-custom").remove();
+                    //$(".sweet-overlay, .sweet-alert").remove();
+                    $(".sweet-alert > h2").html(callback.status);
+                    $(".sweet-alert > p").html("<pre>" + callback.result + "</pre>");
+                    $(".sweet-alert .confirm ").show();
+
+                }).fail(function () {
+                    toastr.success("失敗");
+                    swal({
+                        title: "Error!",
+                        text: "Here's my error message!",
+                        type: "error",
+                        confirmButtonText: "Cool"
+                    });
+
+                });
+
+            });
+
+
+    </script>
+
+{% endblock %}

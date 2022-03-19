@@ -1,0 +1,30 @@
+<div id="host" style="padding-left: 15px">
+
+    <table class="table table-sm table-striped table-bordered text-center">
+
+        <thead>
+        <th>進程名稱</th>
+        <th>username</th>
+        <th>pid</th>
+        <th>cmdline</th>
+        <th>create_time</th>
+
+        </thead>
+
+        <tbody>
+            {% for proc in proc_list %}
+                <tr>
+                    <td>{{ proc.name }}</td>
+                    <td>{{ proc.username }}</td>
+                    <td>{{ proc.pid }}</td>
+                    <td>
+                        <button class="btn" data-toggle="popover" data-placement="bottom" data-content="{{ proc.cmdline }}" style="padding:0px"> {{ proc.cmdline|slice:'20' }}</button>
+                    </td>
+                    <td>{{ proc.create_time }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+

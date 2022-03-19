@@ -1,0 +1,45 @@
+---
+- name: VMware Module TEST
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: change hostname
+      shell: hostnamectl set-hostname {{ hostname }}
+
+    - name: hostnamectl
+      shell: hostnamectl
+
+    - name: generate ssh
+      shell: echo -e 'y\n'|ssh-keygen -q -t rsa -f /root/.ssh/id_rsa -C "" -N ""
+
+    - name: hostnamectl
+      shell: cat /root/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
+
+    - name: Disable Password Authentication
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^PubkeyAuthentication no'
+        line: "PubkeyAuthentication yes"
+        state: present
+        backup: yes
+
+
+    - name: Disable Password Authentication
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication yes'
+        line: "PasswordAuthentication no"
+        state: present
+        backup: yes
+
+
+    - name: Store file into /tmp/fetched/host.example.com/tmp/somefile
+      fetch:
+        src: /root/.ssh/id_rsa
+        dest: "{{ pem_path }}"
+        flat: yes
+
+    - name: restart ssh
+      systemd:
+        name: sshd
+        state: restarted

@@ -1,0 +1,244 @@
+{% extends 'audits/base.html' %}
+{% load static %}
+{% load host_tags %}
+{% load widget_tweaks %}
+
+{% block title %}CMDB{% endblock %}
+
+{% block head %}
+
+    <link href="{% static 'plugins/datepicker/css/datepicker3.css' %}" rel="stylesheet">
+    <script src="{% static 'plugins/datepicker/js/bootstrap-datepicker.js' %}"></script>
+
+    <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}">
+    <script src="{% static 'js/bootstrap-select.js' %}"></script>
+
+
+    <style>
+        #search_btn {
+            margin-bottom: 0;
+        }
+
+        .bootstrap-select {
+            max-width: 200px;
+        }
+
+        .bootstrap-select .btn {
+            background-color: white;
+            border: 1px solid #d1d3e2;
+        }
+
+        .bootstrap-select .dropdown-menu {
+            margin: 15px 0 0;
+        }
+
+        select::-ms-expand {
+            /* for IE 11 */
+            display: none;
+        }
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">日誌審計</li>
+            <li class="breadcrumb-item" aria-current="page">命令執行</li>
+        </ol>
+    </nav>
+
+
+
+    <div class="row mb-3">
+
+        <div class="col-md-0">
+
+        </div>
+
+
+        <!-- 篩選 -->
+        <div class="col-md-12">
+
+            <form id="search_form" method="get" class="form-inline float-right">
+
+                <input type="text" class="form-control" name='contacts' id="search" placeholder="" value="{{ paginator.per_page }}" style="display: none">
+
+                <div class="form-group mr-2" id="date">
+                    <label class="col-form-label mr-1">日期</label>
+                    <div class="input-daterange input-group" id="datepicker">
+                        <input type="text" class="input-sm form-control mr-1" name="date_from"
+                               value="{{ date_from|date:'Y-m-d' }}">
+                        <span class="align-self-center text-lg mr-1">到</span>
+                        <input type="text" class="input-sm form-control mr-1 " name="date_to"
+                               value="{{ date_to|date:'Y-m-d' }}">
+                    </div>
+                </div>
+
+                <div class="form-group mr-1">
+                    <label class="col-form-label mr-1">用戶名</label>
+                    <select class="selectpicker" data-control="wheel" title="" data-live-search="true" name='username'>
+                        <option value="">-------</option>
+                        {% for user in userlist %}
+                            <option value="{{ user.1 }}">{{ user.1 }}</option>
+                        {% endfor %}
+                    </select>
+
+                </div>
+                <div class="form-group mr-2">
+                    <input type="text" class="input-sm form-control" name="keyword"
+                           value="{{ keyword|default:'' }}">
+                </div>
+
+
+                <div class="input-group">
+                    <div class="input-group-btn">
+                        <button id='search_btn' type="submit" class="btn  btn-primary">
+                            Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-hover table-bordered text-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+                    <th>用戶名</th>
+                    <th>類型</th>
+                    <th>Agent</th>
+                    <th>IP</th>
+                    <th>城市</th>
+                    <th>原因</th>
+                    <th>狀態</th>
+                    <th>日期</th>
+                </tr>
+                </thead>
+                <tbody>
+
+
+                {% for userlog in userloginlog_list %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+                        <td>{{ userlog.username }}</td>
+                        <td>{{ userlog.get_type_display }}</td>
+                        <td>{{ userlog.user_agent|slice:'20' }}</td>
+                        <td>
+                            {{ userlog.get_ip }}
+                        </td>
+                        <td>
+                            {{ userlog.city }}
+                        </td>
+
+                        <td>
+                            {{ userlog.get_reason_display }}
+                        </td>
+
+                        <td>
+                            {{ userlog.get_status_display }}
+                        </td>
+
+                        <td>
+                            {{ userlog.datetime }}
+                        </td>
+
+
+                    </tr>
+
+
+
+                {% endfor %}
+
+
+                </tbody>
+                <tfoot>
+
+            </table>
+            <div>
+                <nav aria-label="Page navigation">
+
+                    <ul class="pagination float-left">
+                        共{{ paginator.count }}筆
+                        <label style="padding-left: 20px">顯示</label>
+                        <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit"
+                                id='contacts'>
+                            {% for i in page_list %}
+                                {% if i == paginator.per_page %}
+                                    <option value={{ i }} selected>{{ i }}</option>
+                                {% else %}
+                                    <option value={{ i }}>{{ i }}</option>
+                                {% endif %}
+                            {% endfor %}
+
+                        </select>筆
+                    </ul>
+
+
+                    <ul class="pagination float-right">
+                        {% get_pageer page_obj search_field %}
+                    </ul>
+
+                </nav>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+{% endblock %}
+
+
+{% block extra-js %}
+
+    <script>
+
+        {% for k,v in search_field.items %}
+            $(".selectpicker[name='{{ k }}']").selectpicker('val', "{{ v }}");
+        {% endfor %}
+
+        $('.input-daterange.input-group').datepicker({
+            format: "yyyy-mm-dd",
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: true,
+            autoclose: true
+        });
+
+        $(document).ready(function () {
+            $('.table').DataTable(
+                {
+                    "searching": false,
+                    "paging": false,
+                    "bInfo": false,
+
+
+                }
+            );
+
+
+        }).on('change', "select.contacts", function () {
+            console.log('onchange' + $(this).val());
+            console.log($(this));
+            $('.form-inline [name="contacts"]').val($(this).val())
+            $('.form-inline').submit()
+        })
+
+
+    </script>
+
+
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends 'audits/base.html' %}
+{% load static %}
+{% load host_tags %}
+{% load widget_tweaks %}
+
+{% block title %}CMDB{% endblock %}
+
+{% block head %}
+
+    <link rel="stylesheet" href="{% static 'plugins/xterm/css/xterm.css' %}">
+    <script src="{% static 'plugins/xterm/js/xterm.js' %}"></script>
+
+    <style>
+        .terminal {
+            padding: 5px;
+        }
+
+        .text-navy {
+            color: #1ab394;
+        }
+
+        a {
+            cursor: pointer
+        }
+
+
+    </style>
+{% endblock %}
+
+
+{% block content %}
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">日誌審計</li>
+            <li class="breadcrumb-item" aria-current="page">命令執行</li>
+        </ol>
+    </nav>
+
+
+
+
+
+
+
+
+    <div class="row">
+
+        <div class="col-md-2">
+
+        </div>
+
+
+        <!-- 篩選 -->
+<div class="col-md-10">
+
+            <form class="form-inline float-right" method="get" style="display:none;">
+
+                 <input type="text" class="form-control" name='contacts' id="search" placeholder="" value="{{ paginator.per_page }}" style="display: none">
+
+
+                {{ filterset.form.name.label_tag }}
+                {% render_field filterset.form.name class="form-control mr-2" %}
+
+                {{ filterset.form.manage_ip.label_tag }}
+                {% render_field filterset.form.manage_ip class="form-control mr-2" %}
+
+                {{ filterset.form.enabled.label_tag }}
+                {% render_field filterset.form.enabled class="form-control mr-2" %}
+
+                {{ filterset.form.node.label_tag }}
+                {% render_field filterset.form.node class="form-control mr-2" %}
+
+                <input type="submit" class="btn btn-primary">
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+       <table class="table table-hover table-bordered text-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+                    <th>主機</th>
+                    <th>用戶</th>
+                    <th>命令</th>
+                    <th>運行用戶</th>
+                    <th>成功</th>
+                    <th>開始日期</th>
+                    <th>功能</th>
+                </tr>
+                </thead>
+                <tbody>
+
+
+                {% for cmdrecord in cmdrecord_list %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+                        <td>
+
+                            <a data-toggle="popover"
+                               data-placement="right"
+                               data-content="{% for i in cmdrecord.host.all %}{{ i.name }}, {% endfor %}">
+                                {{ cmdrecord.host.all.count }}
+                            </a>
+                        </td>
+                        <td>{{ cmdrecord.user.username }}</td>
+                        <td>{{ cmdrecord }}</td>
+                        <td>{{ cmdrecord.run_as }}</td>
+                        <td>
+                            {% if  cmdrecord.is_finished %}
+                                <i class="fa fa-check text-navy"></i>
+                            {% else %}
+                                <i class="fa fa-times text-danger"></i>
+                            {% endif %}
+                        </td>
+                        <td>{{ cmdrecord.date_created }}</td>
+
+
+                        <td>
+
+                            <button href="#" class="btn btn-sm btn-primary" id="btn_result"
+                                    data-id="{{ cmdrecord.id }}">
+                                結果
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+
+                </tbody>
+
+            </table>
+                    <nav aria-label="Page navigation">
+
+                    <ul class="pagination float-left">
+                        共{{ paginator.count }}筆
+                        <label style="padding-left: 20px">顯示</label>
+                        <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit"
+                                id='contacts'>
+                            {% for i in page_list %}
+                                {% if i == paginator.per_page %}
+                                    <option value={{ i }} selected>{{ i }}</option>
+                                {% else %}
+                                    <option value={{ i }}>{{ i }}</option>
+                                {% endif %}
+                            {% endfor %}
+
+                        </select>筆
+                    </ul>
+
+
+                    <ul class="pagination float-right">
+                        {% get_pageer page_obj search_field %}
+                    </ul>
+
+                </nav>
+        </div>
+
+        <div class="col-md-6">
+            <div id="terminal"></div>
+        </div>
+
+
+    </div>
+
+
+{% endblock %}
+
+
+{% block extra-js %}
+
+
+    <script>
+
+
+        $(function () {
+            $('[data-toggle="popover"]').popover()
+        })
+
+
+    </script>
+
+    <script>
+        function initTerm() {
+            term = new Terminal({
+                //screenKeys: false,
+                fontSize: 14,
+                cols: 90,
+                rows: 30,
+                //rightClickSelectsWord: true,
+                //disableStdin: true,
+                //cursorBlink: 5,
+                //scrollback: 30,
+                theme: {
+                    background: '#1f1b1b'
+                },
+            });
+            term.open(document.getElementById('terminal'));
+            term.write('執行結果將顯示在這裡\r\n');
+            //term.resize(60, 30)
+
+        }
+
+    </script>
+
+    <script>
+
+        $(document).ready(function () {
+            $('.table').DataTable(
+                {
+                    "searching": false,
+                    "paging": false,
+                    "bInfo": false,
+
+
+                }
+            );
+        })
+          .on('change', ".contacts", function () {
+                console.log('onchange');
+                $('.form-inline [name="contacts"]').val($(this).val())
+                $('.form-inline').submit()
+            })
+
+    </script>
+
+    <script>
+
+
+
+        $(document).ready(function () {
+            initTerm();
+        })
+            .on('click', '#btn_result', function () {
+                term.reset();
+                //console.log('btn_result');
+                $this = $(this);
+                var the_url = "{% url 'api:command-detail' 0 %}".replace('0', $this.data('id'));
+                $.ajax({
+                    url: the_url,
+                    type: 'GET',
+                    {#async: false#}
+
+
+                }).done(function (callback) {
+                    //console.log(callback);
+                    //toastr.success("成功");
+                    term.write(callback._result);
+
+
+                }).fail(function () {
+                    toastr.success("失敗");
+                    swal({
+                        title: "Error!",
+                        text: "Here's my error message!",
+                        type: "error",
+                        confirmButtonText: "Cool"
+                    });
+
+                });
+
+            })
+
+    </script>
+
+{% endblock %}

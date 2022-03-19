@@ -1,0 +1,177 @@
+{% extends 'basic/base.html' %}
+{% load static %}
+{% load host_tags %}
+{% load widget_tweaks %}
+
+{% block title %}資產列表{% endblock %}
+
+{% block content %}
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">基礎資源</li>
+            <li class="breadcrumb-item active" aria-current="page">資產列表</li>
+        </ol>
+    </nav>
+
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+      <strong>資產列表</strong>數據由物理服務器以及網路設備錄入.
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <div class="row mb-3">
+
+
+        <div class="col-md-2">
+
+        </div>
+
+
+        <!-- 篩選 -->
+        <div class="col-md-10">
+
+            <form class="form-inline float-right" method="get">
+
+                <input type="text" class="form-control" name='contacts' id="search" placeholder="" value="{{ paginator.per_page }}" style="display: none">
+
+                {{ filterset.form.name.label_tag }}
+
+                {% render_field filterset.form.name class="form-control mr-2" %}
+
+                {{ filterset.form.content_type.label_tag }}
+
+                {% render_field filterset.form.content_type class="form-control mr-2" %}
+
+                {{ filterset.form.device_status_id.label_tag }}
+                {% render_field filterset.form.device_status_id class="form-control mr-2" %}
+
+                {{ filterset.form.tag.label_tag }}
+                {% render_field filterset.form.tag class="form-control mr-2 " %}
+
+                {{ filterset.form.rack.label_tag }}
+                {% render_field filterset.form.rack class="form-control mr-2 " %}
+
+
+                <input type="submit" class="btn btn-primary">
+            </form>
+        </div>
+    </div>
+
+
+    <div class="row ">
+        <div class="col-md-12">
+
+            <table class="table table-hover table-bordered text-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+
+                    <th>名稱</th>
+                    <th>類型</th>
+                    <th>狀態</th>
+                    <th>標籤</th>
+                    <th>機櫃</th>
+                    <th>產編</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for asset in asset_list %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td name="id" style="display: none">
+                            <input value="{{ asset.id }}">
+                        </td>
+                        <td><a href="{% url 'asset:asset-update' asset.id %}">{{ asset.content_object.name }}</a></td>
+                        <td name="type">{{ asset.get_device_type_id_display }}</td>
+                        <td name="status">{{ asset.get_device_status_id_display }}</td>
+                        <td> {{ asset.tag|default:"" }}</td>
+                        <td name="rack">{{ asset.rack|default:"" }}</td>
+                    <td>{{ asset.number|default:"" }}</td>
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+                <tfoot>
+
+
+                </tfoot>
+
+            </table>
+            <nav aria-label="Page navigation">
+
+                    <ul class="pagination float-left">
+                        共{{ paginator.count }}筆
+                        <label style="padding-left: 20px">顯示</label>
+                        <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit"
+                                id='contacts'>
+                            {% for i in page_list %}
+                                {% if i == paginator.per_page %}
+                                    <option value={{ i }} selected>{{ i }}</option>
+                                {% else %}
+                                    <option value={{ i }}>{{ i }}</option>
+                                {% endif %}
+                            {% endfor %}
+
+                        </select>筆
+                    </ul>
+
+
+                    <ul class="pagination float-right">
+                        {% get_pageer page_obj search_field %}
+                    </ul>
+
+                </nav>
+
+        </div>
+    </div>
+
+
+
+
+{% endblock %}
+
+
+
+{% block extra-js %}
+
+ <script>
+
+        $(document).ready(function () {
+            $('.table').DataTable(
+                {
+                    "searching": false,
+                    "paging": false,
+                    "bInfo": false,
+
+
+                }
+            );
+        })
+            .on('click', '#btn_asset_add', function () {
+                //console.log('btn_asset_add');
+                //console.log(this);
+                //console.log($(this).closest("tr").find("td[name='id'] input").val());
+                var id = $(this).closest("tr").find("td[name='id'] input").val();
+                $.ajax({
+                    url: '{% url 'asset:asset-list' %}',
+                    type: 'POST',
+                    data: {'host': id},
+
+
+                });
+            })
+            .on('change', ".contacts", function () {
+                console.log('onchange');
+                $('.form-inline [name="contacts"]').val($(this).val())
+                $('.form-inline').submit()
+            })
+
+    </script>
+
+
+{% endblock %}

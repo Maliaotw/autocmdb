@@ -1,0 +1,90 @@
+{% extends 'base/base4.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}機房列表{% endblock %}
+
+
+
+
+{% block content %}
+
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">VM</li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a href="{% url 'vm:vm-list' %}">實例列表</a>
+            </li>
+
+        </ol>
+    </nav>
+
+
+    <div class="row">
+
+
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>更新資訊</h5>
+
+                </div>
+                <form id="Form" method="post" style="padding:20px">
+                    <div class="container">
+
+
+                        {% csrf_token %}
+
+                        <div class="form-group row">
+                            <div class="col-md-2 control-label">{{ form.name.label }}</div>
+                            <div class="col-md-9">{{ form.name }}</div>
+                        </div>
+
+
+                        <div class="form-group row">
+                            <div class="col-md-2 control-label">{{ form.num_cpus.label }}</div>
+                            <div class="col-md-9">{{ form.num_cpus }}</div>
+                        </div>
+
+
+                        <div class="form-group row">
+                            <div class="col-md-2 control-label">{{ form.memory_mb.label }}</div>
+                            <div class="col-md-9">{{ form.memory_mb }}</div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-md-2 control-label">{{ form.size_gb.label }}</div>
+                            <div class="col-md-9">{{ form.size_gb }}</div>
+                        </div>
+
+
+                        <div class="form-group row">
+                            <div class="col-md-2 control-label">類型</div>
+                            <div class="col-md-9">CENTOS 7</div>
+                        </div>
+
+
+                        <div class="text-center">
+                            <input type="submit" class="btn btn-primary" value="提交">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block base-js %}
+
+
+{% endblock %}
+{% block extra-js %}
+
+
+
+
+{% endblock %}

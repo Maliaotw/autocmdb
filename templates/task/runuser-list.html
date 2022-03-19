@@ -1,0 +1,249 @@
+{% extends 'task/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}CMDB{% endblock %}
+
+
+{% block head %}
+
+
+    <link rel="stylesheet" href="{% static 'plugins/xterm/css/xterm.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/codemirror/css/codemirror.css' %}" type="text/css">
+    <script src="{% static 'plugins/xterm/js/xterm.js' %}"></script>
+    <script src="{% static 'plugins/codemirror/js/codemirror.js' %}"></script>
+    <script src="{% static 'js/clike.js' %}"></script>
+
+    <link rel="stylesheet" href="{% static 'plugins/ztree/css/zTreeStyle/zTreeStyle.css' %}" type="text/css">
+    <script src="{% static 'plugins/ztree/js/jquery.ztree.core.js' %}"></script>
+    <script src="{% static 'plugins/ztree/js/jquery.ztree.excheck.js' %}"></script>
+
+
+    <style>
+
+        .panel .table > tbody > tr > td {
+            border-top: 0px
+        }
+
+
+        .panel-warning > .panel-heading {
+            background-color: #f8ac59;
+            border-color: #f8ac59;
+            color: #ffffff;
+        }
+
+        #tree .list-group {
+            font-size: 10px;
+        }
+
+        #tree .list-group-item {
+            padding: 5px 5px;
+        }
+
+
+        .terminal {
+            padding: 5px;
+        }
+
+        .CodeMirror {
+            border: 3px solid #eee;
+            font-family: monospace;
+            height: 100px;
+            color: black;
+            direction: ltr;
+        }
+
+
+    </style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">作業中心</li>
+            <li class="breadcrumb-item" aria-current="page">
+                <span class="font-weight-bold text-dark">執行用戶</span>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="row mb-3">
+
+
+        <div class="col-md-4 text-left">
+            <a href="{% url 'host:runuser-create' %}" class="btn btn-primary">新增用戶</a>
+        </div>
+
+
+        <!-- 篩選 -->
+        <div class="col-md-10">
+
+            <form class="form-inline float-right" method="get" style="display: none">
+
+                 <input type="text" class="form-control" name='contacts' id="search" placeholder="" value="{{ paginator.per_page }}" style="display: none">
+
+
+                <input type="submit" class="btn btn-primary">
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <div class="row ">
+
+        <div class="col-md-12">
+            <table class="table table-hover table-bordered text-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+                    <th>名稱</th>
+                    <th>用戶名</th>
+                    <th>備註</th>
+                    <th>功能</th>
+                </tr>
+                </thead>
+                <tbody>
+
+
+                {% for runuser in runuser_list %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+                        <td>{{ runuser.name }}</td>
+
+                        <td>
+                            {{ runuser.username }}
+                        </td>
+                        <td>
+                            {{ runuser.comment }}
+                        </td>
+
+                        <td>
+                            <a href="{% url 'host:runuser-update' runuser.id %}"
+                               class="btn btn-sm btn-info active">
+                                更新
+                            </a>
+                            <a class="btn btn-sm btn-danger btn-delete active" data-uid="{{ runuser.id }}"
+                               data-name="[{{ runuser.name }}]">
+                                删除
+                            </a>
+                        </td>
+                    </tr>
+
+
+
+                {% endfor %}
+
+
+                </tbody>
+                <tfoot>
+
+                </tfoot>
+
+            </table>
+            <nav aria-label="Page navigation">
+
+                <ul class="pagination float-left">
+                    共{{ paginator.count }}筆
+                    <label style="padding-left: 20px">顯示</label>
+                    <select class="selectpicker contacts form-control-sm" name='contacts' data-width="fit"
+                            id='contacts'>
+                        {% for i in page_list %}
+                            {% if i == paginator.per_page %}
+                                <option value={{ i }} selected>{{ i }}</option>
+                            {% else %}
+                                <option value={{ i }}>{{ i }}</option>
+                            {% endif %}
+                        {% endfor %}
+
+                    </select>筆
+                </ul>
+
+
+                <ul class="pagination float-right">
+                    {% get_pageer page_obj search_field %}
+                </ul>
+
+            </nav>
+        </div>
+
+    </div>
+
+    {% csrf_token %}
+
+
+
+{% endblock %}
+
+
+
+
+
+
+{% block extra-js %}
+
+
+    <script>
+
+        $(document).ready(function () {
+            $('.table').DataTable(
+                {
+                    "searching": false,
+                    "paging": false,
+                    "bInfo": false,
+
+
+                }
+            );
+        })
+            .on('change', ".contacts", function () {
+            console.log('onchange');
+            $('.form-inline [name="contacts"]').val($(this).val())
+            $('.form-inline').submit()
+        })
+
+
+
+        $(document).ready(function () {
+
+        })
+            .on('click', '.btn-delete', function () {
+                var $this = $(this);
+
+                var the_url = "{% url 'host:runuser-delete' 0 %}".replace('0', $this.data('uid'));
+                swal({
+                    title: "你確定刪除嗎",
+                    text: $this.data('name'),
+                    type: "warning",
+                    showCancelButton: true,
+                    cancelButtonText: '取消',
+                    confirmButtonColor: "#ed5565",
+                    confirmButtonText: '確認',
+                    closeOnConfirm: true
+                }, function () {
+                    $.ajax({
+                        url: the_url,
+                        type: 'POST',
+
+                    }).done(function () {
+                        document.location.reload();
+                    });
+                });
+
+            });
+
+
+    </script>
+
+
+
+{% endblock %}

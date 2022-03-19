@@ -1,0 +1,24 @@
+<div id="host" style="padding-left: 15px">
+
+    <table class="table table-sm table-striped table-bordered text-center">
+
+        <thead>
+        <th>proto</th>
+        <th>port</th>
+        <th>pid</th>
+        <th>name</th>
+        </thead>
+
+        <tbody>
+        {% for net in net_list %}
+            <tr>
+                <td>{{ net.proto }}</td>
+                <td>{{ net.port }}</td>
+                <td>{{ net.pid }}</td>
+                <td>{{ net.name }}</td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>

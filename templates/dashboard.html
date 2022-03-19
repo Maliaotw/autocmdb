@@ -1,0 +1,221 @@
+{% extends 'base/base3.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}儀表盤{% endblock %}
+
+{% block head %}
+
+<!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap3/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+
+    <!-- Bootstrap core JavaScript
+================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'js/jquery-3.3.1.js' %}"></script>
+    <script src="{% static 'js/bootstrap3/bootstrap3.js' %}"></script>
+    <script src="{% static 'js/all.js' %}"></script>
+
+
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="{% static 'plugins/sweetalert/css/sweetalert.css' %}">
+    <script src="{% static 'plugins/sweetalert/js/sweetalert.min.js' %}"></script>
+
+    <link rel="stylesheet" href="{% static 'plugins/toastr/css/toastr.min.css' %}">
+    <script src="{% static "plugins/toastr/js/toastr.min.js" %}"></script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">控制台</h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+
+    <div class="row">
+
+
+
+
+        <!-- 總PC資產 -->
+        <div class="col-lg-3 col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-laptop fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div class="huge">{{ counts.host }}</div>
+                            <div>台</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">
+                    <div class="panel-footer">
+
+                        <span class="pull-left">查看詳情</span>
+                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                        <div class="clearfix"></div>
+
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 維修中 -->
+        <div class="col-lg-3 col-md-6">
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-rotate-left fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div class="huge">{{ counts.netware }}</div>
+                            <div>台</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">
+                    <div class="panel-footer">
+                        <span class="pull-left">查看詳情</span>
+                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 維修中 -->
+        <div class="col-lg-3 col-md-6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-newspaper fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div class="huge">{{ news_obj.count }}</div>
+                            <div>最新消息</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">
+                    <div class="panel-footer">
+                        <span class="pull-left">查看詳情</span>
+                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="col-md-4">
+                <div id="main" style="width: 100%;height:400px;"></div>
+
+            </div>
+
+            <div class="col-md-4">
+                <div id="main2" style="width: 100%;height:400px;"></div>
+
+            </div>
+
+
+
+
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block base-js %}
+
+        <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: 'ECharts 入门示例'
+            },
+            tooltip: {},
+            legend: {
+                data:['销量']
+            },
+            xAxis: {
+                data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+            },
+            yAxis: {},
+            series: [{
+                name: '销量',
+                type: 'bar',
+                data: [5, 20, 36, 10, 10, 20]
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+
+      <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main2'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: 'ECharts 入门示例'
+            },
+            tooltip: {},
+            legend: {
+                data:['销量']
+            },
+            xAxis: {
+                data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+            },
+            yAxis: {},
+            series: [{
+                name: '销量',
+                type: 'bar',
+                data: [5, 20, 36, 10, 10, 20]
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+
+
+
+{% endblock %}
+{% block extra-js %}
+
+
+
+
+{% endblock %}

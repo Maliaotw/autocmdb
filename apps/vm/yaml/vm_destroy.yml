@@ -1,0 +1,35 @@
+---
+- name: VMware Destroy
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - name: Poweroff VM
+      vmware_guest:
+        # Vcenter needed informations
+        hostname: "{{ VCENTER_SERVER }}"
+        username: "{{ VCENTER_USER }}"
+        password: "{{ VCENTER_PASS }}"
+        validate_certs: False  #关闭证书认证
+        state: poweredoff
+
+        # VM identification
+        datacenter: "BI"
+        # cluster: "17.16.10.16"
+        folder: ""
+        name: "{{ newhost }}"
+
+    - name: Destroy Failed VM
+      vmware_guest:
+        # Vcenter needed informations
+        hostname: "{{ VCENTER_SERVER }}"
+        username: "{{ VCENTER_USER }}"
+        password: "{{ VCENTER_PASS }}"
+        validate_certs: False  #关闭证书认证
+        state: absent
+
+        # VM identification
+        datacenter: "BI"
+        # cluster: "17.16.10.16"
+        folder: ""
+        name: "{{ newhost }}"
+

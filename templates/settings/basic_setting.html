@@ -1,0 +1,45 @@
+{% extends 'settings/base.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="row">
+
+    <div class="col-sm-12">
+      <div class="container-fluid">
+        <div class="panel-options">{% include 'settings/_setting_tabs.html' %}</div>
+        <div class="alert alert-info alert-dismissible fade show mt-2" role="alert">
+          <strong>{{ message }}</strong>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="form">
+          <div class="col-sm-12" style="padding-left:0">
+            <form action="" method="post" class="form-horizontal">
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                  {{ form.non_field_errors }}
+                </div>
+              {% endif %}
+              {% csrf_token %}
+              {% for field in form %}
+                <div class="form-group">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  <small id="emailHelp" class="form-text text-muted">{{ field.help_text }}</small>
+                </div>
+              {% endfor %}
+              <div class="col-md-12 mb-3">
+                <div class="text-center">
+                  <button class="btn btn-info btn-submit">
+                    <i class="fa fa-upload"></i> 提交
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

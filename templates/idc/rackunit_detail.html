@@ -1,0 +1,65 @@
+{% extends 'idc/base.html' %}
+{% load static %}
+{% load host_tags %}
+
+{% block title %}CMDB{% endblock %}
+
+
+
+
+{% block content %}
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">機房管理</li>
+            <li class="breadcrumb-item" aria-current="page">機櫃列表</li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ rackunit }}
+            </li>
+        </ol>
+    </nav>
+
+
+    <div class="row">
+
+        <div class="col-md-4">
+            <a href="{% url 'asset:rack-create' %}" class="btn btn-primary">新增機櫃</a>
+        </div>
+
+
+        <!-- 篩選 -->
+        <div class="col-md-8 text-right">
+
+            <form class="form-inline" method="get">
+
+            </form>
+        </div>
+    </div>
+
+
+    <div class="" id="tb" style="">
+
+    </div>
+
+
+{% endblock %}
+
+
+
+
+
+{% block extra-js %}
+
+
+    <script>
+
+
+    </script>
+
+
+    <script>
+
+
+    </script>
+
+{% endblock %}
